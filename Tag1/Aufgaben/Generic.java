@@ -1,11 +1,11 @@
 package org.example.nkt.Tag1.Aufgaben;
 
-class generic {
+class Generic {
     // Fragen:
     // Warum wirft die main Method Compiler fehler?
     // Verändern sie folgende Methode, sodass die main Method keine Compiler fehler
     // mehr wirft
-    public static  void printStack(int[] array) {
+    public static void printStack(int[] array) {
         for (int i : array) {
             System.out.print(i + " ");
         }

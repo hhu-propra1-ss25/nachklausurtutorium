@@ -34,7 +34,7 @@ public class StreamsLösungen {
 
         // Aufgabe:
         // Gegeben sei eine Liste von Integern. Wir wollen diese Integer sortiert als
-        // String ausgaben, wobei Duplikate entfernt werden sollen.
+        // String ausgeben, wobei Duplikate entfernt werden sollen.
         // Implementiere dazu folgende Methode, wobei genau ein Stream verwendet werden
         // soll.
         // Verwende Methodenreferenzen wo möglich.
@@ -57,8 +57,7 @@ public class StreamsLösungen {
         // Wir wollen eine Methode implementieren, welche uns die Häufigkeit der Zeichen
         // in den einzigartigen Integern zurückgibt.
         //
-        // Bsp: Seien die Integer {1 10 -20} die Map ist: {'0': 2, '1': 2, '2': 1, '-':
-        // 1}
+        // Bsp: Seien die Integer {1 10 -20} die Map ist: {'0': 2, '1': 2, '2': 1, '-': 1}
         // Implementiere die Methode mit genau einem Stream
         //
         // Bonuspunkte gibt es, wenn die Methode ohne Collector implementiert wird.
@@ -88,8 +87,8 @@ public class StreamsLösungen {
         }
 
         // Aufgabe:
-        // Schreibe eine Methoed relativeMax, welche ein Array von Würfen nimmt,
-        // und den Wurf mit dem relativ größten Wert, gemessen an der Auganzahl,
+        // Schreibe eine Methode relativeMax, welche ein Array von Würfen nimmt,
+        // und den Wurf mit dem relativ größten Wert, gemessen an der Augenzahl,
         // zurückgibt.
         //
         // Den relativen Wert erhalten wir durch die Formel
