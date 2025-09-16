@@ -1,0 +1,36 @@
+== Lösung zur Klausur Professionelle Softwareentwicklung Hauptklausur Sommersemester 2020
+
+=== Aufgabe 1
+[source, java]
+for(String s : names) {
+    System.out.println(s);
+}
+
+=== Aufgabe 2
+
+[source, java]
+default Operator<T> butBefore(Operator<T> first) {
+    return x -> this.apply(first.apply(x));
+}
+
+=== Aufgabe 3
+
+Aggregate müssen innerhalb eines Bounded Contexts liegen. Dementsprechend darf das ForumPost Aggregat nicht innerhalb des Post Bounded Context und des User Bounded Context liegen. Korrigiert werden kann der Fehler, indem es ein Aggregat im Post Bounded Context und eins im User Bounded Context gibt. Damit muss die Entity User eine Aggregat Root werden.
+
+=== Aufgabe 4
+
+Namen der SOLID-Prinzipien:
+
+Single Responsibility Prinzip, Open/Close Prinzip, Liskov'sches Substitutionsprinzip, Interface Segregation, Dependency Inversion Prinzip.
+
+Verletzt ist auf jeden Fall das Open/Close Prinzip, da eine Switch-Verzweigung statt Polymorphismus genutzt wird. Bei den anderen Prinzipien kam es bei der Korrektur auf die Begründung an, ob das Prinzip wirklich verletzt war oder nicht. Beispiel: Gibt man an, dass das SRP (nicht) verletzt ist, muss man auch angeben, welche Aufgabe/n der Code erfüllt.
+
+Das Liskov'sche Substitutionsprinzip ist dann verletzt, wenn handleAngestellt() andere Ergebnisse oder Seiteneffekte liefert, als handleNormalPerson(), da ANGESTELLT in ZugangsPunkt als default behandelt wird.
+
+=== Aufgabe 5
+
+Das Problem entsteht dadurch, dass x und y von Punkt veränderlich sind. Dadurch können die Werte eines Punktes in Gerade geändert werden, während Gerade darauf zugreift und das erste und zweite a.getY() kann unterschiedliche Werte liefern. Das lässt sich verhindern, indem x und y in Punkt final deklariert werden. Synchronized verhindert diesen Fehler *nicht*.
+
+=== Aufgabe 6
+
+Der Test vergleicht den Wert eines gemockten Objektes (zugang) mit 0 (d.getHour). Da nicht definiert wurde, was zugang.testAlter() liefern soll (durch when(zugang.testAlter()).thenReturn(...)), liefert das gemockte Objekt den long default Wert, der 0 ist. Deswegen ist der Test grün.
