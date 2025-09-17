@@ -1,7 +1,8 @@
 package org.example.nkt.Tag1.Aufgaben;
 
-public interface funcInterface {
+public interface FuncInterface {
 }
+
 @FunctionalInterface
 interface Comparator<T> {
     int compare(T first, T second);
@@ -10,7 +11,6 @@ interface Comparator<T> {
     static boolean test() {
         return false;
     }
-
 }
 
 

@@ -104,7 +104,6 @@ public class Streams {
             return numbers.stream()
                     .filter(FizzBuzzableNumbers::isFizzBuzzableNumber)
                     .toList();
-
         }
     }
 
@@ -149,7 +148,7 @@ public class Streams {
                     .map(String::valueOf)
                     .flatMapToInt(string -> string.chars())
                     .mapToObj(c -> (char) c)
-                    .collect(Collectors.groupingBy(c -> c,Collectors.counting()));
+                    .collect(Collectors.groupingBy(c -> c, Collectors.counting()));
         }
 
     }

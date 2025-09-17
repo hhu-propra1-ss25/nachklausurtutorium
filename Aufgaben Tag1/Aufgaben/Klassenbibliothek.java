@@ -5,17 +5,17 @@ import java.util.function.*;
 import java.util.stream.Stream;
 
 public class Klassenbibliothek {
-    static List<String> liste = new ArrayList<>(List.of("161","Alerta"));
+    static List<String> liste = new ArrayList<>(List.of("161", "Alerta"));
 
-    public static void test(){
+    public static void test() {
         Set<String> set = new HashSet<>(liste);
         set.addAll(liste);
 
         Optional<String> optional1 = Optional.empty();
         Optional<String> optional2 = Optional.of("value");
-        Map<Boolean,String> map = new HashMap<>();
-        map.put(optional1.isPresent(),optional1.orElseGet(() -> "namenslos"));
-        map.put(optional2.isPresent(),optional2.get());
+        Map<Boolean, String> map = new HashMap<>();
+        map.put(optional1.isPresent(), optional1.orElseGet(() -> "namenslos"));
+        map.put(optional2.isPresent(), optional2.get());
         map.entrySet().stream().forEach(System.out::println);
         map.entrySet().stream().forEach(entry -> System.out.println(entry));
     }
