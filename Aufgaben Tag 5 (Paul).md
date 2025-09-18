@@ -195,7 +195,7 @@ List<Map<String, Integer>> alleBlätter = List.of(
 **Erwartetes Ergebnis:**
 `{Anna=19, Ben=25, Clara=19}`
 
-Ihre Lösung **muss genau einen Stream** benutzen und darf keine anderen Kontrollstrukturen verwenden.
+Ihre Lösung muss **mindestens einen Stream** benutzen und darf keine anderen Kontrollstrukturen verwenden.
 
 ```java
 public static Map<String, Integer> berechneGesamtpunkte(List<Map<String, Integer>> alleBlätter) {
