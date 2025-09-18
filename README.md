@@ -14,16 +14,24 @@ Jeden Tag von Montag den 15.09.2025 bis Freitag den 19.09.2025 von 08:30 bis 12:
 
 **Ihr könnt euch jetzt Aufgaben für den fünften Tag des NKT wünschen: [Github Discussion](https://github.com/hhu-propra1-ss25/nachklausurtutorium/discussions/2).**
 
+19.09.2025 (Tag 5):
+
 18.09.2025 (Tag 4):
-- Folien zu Tag 3 aktualisiert, speziell die Cheat-Sheet Übersichts Folien ([Folien Tag 1-3 (Paul).pdf](./Folien%20Tag%201-3%20(Paul).pdf))
+- Folien zu Tag 3 aktualisiert ([Folien Tag 1-3 (Paul).pdf](./Folien%20Tag%201-3%20(Paul).pdf))
+  - Neue Cheat-Sheet Übersichts Folien zu `Prinzipien` und `Code Smells` um Folie 150 herum
+  - Neue Visualisierung zu `Zerlegungsstrategien: Fachlich vs. Technisch`
+  - Themenblock um `LCHC` umstrukturiert
+  - Code Beipsiele zu `Code Smells im Großen` nachgebessert
+- Themenblock `Git im Detail` übersprungen
+
+16.09.2025 (Tag 3):
 
 16.09.2025 (Tag 2):
-- Gestern übersprungene Themen jetzt für interssierte nachlesbar in [Folien Tag 1-3 (Paul).pdf](./Folien%20Tag%201-3%20(Paul).pdf)
+- Gestern übersprungenen Themenblock `Werkzeuge für Softwareentwicklung` jetzt nachlesbar in [Folien Tag 1-3 (Paul).pdf](./Folien%20Tag%201-3%20(Paul).pdf)
 
 15.09.2025 (Tag 1):
 - Thema `UML-Diagramme` übersprungen
-- Themenblock `Werkzeuge für Softwareentwicklung` nur teilweise Besprochen
-
+- Themenblock `Werkzeuge für Softwareentwicklung` nur teilweise besprochen
 
 ## Tagesplanung
 
