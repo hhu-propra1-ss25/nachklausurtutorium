@@ -4,13 +4,15 @@ Jeden Tag von Montag den 15.09.2025 bis Freitag den 19.09.2025 von 08:30 bis 12:
 
 ## Links
 - [GitHub Organisation](https://github.com/hhu-propra1-ss25/Organisation)
-- [RocketChat](https://rocketchat.hhu.de/group/Propra-SoSe-25-NKT)
-- [Java Online Editor](https://www.jdoodle.com/online-java-compiler)
+- [Fragen zur Vorlesung](https://github.com/hhu-propra1-ss25/Organisation/discussions)
+- [Fragen zum Nachklausurtutorium](https://github.com/hhu-propra1-ss25/nachklausurtutorium/discussions)
 
+- [Java Online Editor](https://www.jdoodle.com/online-java-compiler)
+- [Mentimeter](https://www.mentimeter.com/)
 
 ## Aktuelles
 
-Ihr könnt euch jetzt Aufgaben für den fünften Tag des NKT wünschen: [Github Discussion](https://github.com/hhu-propra1-ss25/nachklausurtutorium/discussions/2).
+**Ihr könnt euch jetzt Aufgaben für den fünften Tag des NKT wünschen: [Github Discussion](https://github.com/hhu-propra1-ss25/nachklausurtutorium/discussions/2).**
 
 18.09.2025 (Tag 4):
 - Folien zu Tag 3 aktualisiert, speziell die Cheat-Sheet Übersichts Folien ([Folien Tag 1-3 (Paul).pdf](./Folien%20Tag%201-3%20(Paul).pdf))
@@ -143,6 +145,8 @@ Ihr könnt euch jetzt Aufgaben für den fünften Tag des NKT wünschen: [Github 
 ### Tag 5 - Klausurvorbereitung
 
 * **Altklausuren lösen**
+* **Eure Vorgeschlagenen Aufgaben erklären**
+* **Eure Themenwünsche nochmal aufarbeiten**
 
 ## Kursmaterialien
 
