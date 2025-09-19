@@ -215,7 +215,7 @@ public static Map<String, Integer> berechneGesamtpunkte(List<Map<String, Integer
         .flatMap(blatt -> blatt.entrySet().stream()) // Stream<Map.Entry<String, Integer>>
         .collect(Collectors.groupingBy(
             (entry) -> entry.getKey(), // Gruppiere nach Name (Alternativ geht auch: Map.Entry::getKey)
-            Collectors.summingInt(Map.Entry::getValue) // Addiere die Punkte (Werte)
+            Collectors.summingInt((entry) -> entry.getValue()) // Addiere die Punkte (Alternativ geht auch: Map.Entry::getValue)
         ));
 }
 ```
