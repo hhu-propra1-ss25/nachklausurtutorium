@@ -239,7 +239,8 @@ List<String> ergebnisse = MapTransformer.transformMap(studentenNoten, statusPrue
 // ergebnisse enthält: ["Alex hat bestanden", "Maria hat bestanden", "Tom hat nicht bestanden"] (Die Reihenfolge kann variieren)
 ```
 
-Ihre Lösung **muss Streams verwenden**. Die Reihenfolge der Elemente in der Ergebnisliste ist nicht vorgegeben.
+Ihre Lösung muss **genau einen Streams verwenden** und keine weiteren Kontrollstrukturen.
+Die Reihenfolge der Elemente in der Ergebnisliste ist nicht vorgegeben.
 
 **Tipp:** `map.entrySet().stream()` gibt Ihnen einen Stream der Key-Value-Paare.
 
