@@ -242,8 +242,6 @@ List<String> ergebnisse = MapTransformer.transformMap(studentenNoten, statusPrue
 Ihre Lösung muss **genau einen Streams verwenden** und keine weiteren Kontrollstrukturen.
 Die Reihenfolge der Elemente in der Ergebnisliste ist nicht vorgegeben.
 
-**Tipp:** `map.entrySet().stream()` gibt Ihnen einen Stream der Key-Value-Paare.
-
 ```java
 import java.util.List;
 import java.util.Map;
