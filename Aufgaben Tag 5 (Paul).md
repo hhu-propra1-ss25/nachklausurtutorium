@@ -176,7 +176,7 @@ record Hörsaal(String name, Set<String> plätze) {
 }
 ```
 
-### Aufgabe zu Streams
+### Aufgabe zu Streams (schwierig)
 
 In der Verwaltung eines Programmierkurses werden die Punkte für mehrere Übungsblätter in einer `List<Map<String, Integer>>` gespeichert.
 Jeder Eintrag in der Liste repräsentiert ein Übungsblatt, und die darin enthaltene Map speichert die erreichten Punkte pro Studierendem.
@@ -220,7 +220,7 @@ public static Map<String, Integer> berechneGesamtpunkte(List<Map<String, Integer
 }
 ```
 
-### Aufgabe zu Higher-Order Functions
+### Aufgabe zu Higher-Order Functions (einfach)
 
 In der funktionalen Programmierung sind "Higher-Order Functions" (Funktionen, die andere Funktionen als Parameter erhalten) ein zentrales Konzept.
 Schreiben Sie eine solche generische Hilfsmethode `transformMap` für `Map`-Datenstrukturen in Java.
@@ -272,7 +272,7 @@ public class MapTransformer {
 }
 ```
 
-### Aufgabe zu Mocking
+### Aufgabe zu Mocking (mittel)
 
 Betrachten Sie den folgenden Code-Ausschnitt aus einer Anwendung zur Rechtschreibkorrektur. Die Klasse `Checker` nutzt eine `Buchsammlung`, um an ein `Woerterbuch` zu gelangen und dann zu prüfen, ob ein Satz korrekt ist.
 
@@ -349,7 +349,7 @@ void testSatzKorrekt() {
 * **Methode `satzKorrekt`:** Die Methode würde das `Woerterbuch` direkt als Klassenattribut verwenden und nicht mehr über die `Buchsammlung` holen. Die Verantwortung, das richtige Wörterbuch zu finden, wird so aus dem `Checker` herausgezogen. Der Test würde dadurch viel einfacher, da nur noch ein Objekt (`Woerterbuch`) gemockt werden müsste.
 
 
-### Aufgabe zu JUnit Tests 1
+### Aufgabe zu JUnit Tests 1 (mittel)
 
 In einem Ticketsystem soll eine `TicketService`-Klasse den Kauf eines Tickets abwickeln. Dazu wird ein externer `PaymentProvider` aufgerufen, um die Zahlung durchzuführen. Der folgende Code ist bereits implementiert:
 
