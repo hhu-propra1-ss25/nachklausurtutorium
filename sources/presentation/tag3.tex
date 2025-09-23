@@ -1,0 +1,2001 @@
+\section{Tag 3 - Architektur \& Prinzipien}
+
+% ===========================
+% Bausteine & Strukturen
+% ===========================
+
+\subsection{Bausteine \& Strukturen}
+
+\begin{frame}{Wartbare Software-Architektur}
+  \textbf{Warum Architektur wichtig ist:}
+  \begin{itemize}
+    \item 70\% der Software-Kosten entstehen NACH der initialen Entwicklung
+    \item Wartungsaufgaben: Neue Features, Bugs beheben, Performance optimieren
+    \item Schlechte Architektur = exponentiell steigende Kosten
+  \end{itemize}
+
+  \textbf{Zentrale Herausforderung:}
+  \begin{itemize}
+    \item Komplexe Software in verständbare Teile zerlegen
+    \item Abhängigkeiten zwischen Komponenten minimieren
+    \item Änderungen lokal begrenzen
+  \end{itemize}
+
+  \begin{exampleblock}{Von LCHC zu praktischen Prinzipien}
+    \begin{itemize}
+      \item \textbf{LCHC}: Das Fundament guter Architektur
+      \item Single Responsibility \& Information Hiding
+      \item Zerlegungsstrategien: Fachlich vs. Technisch
+      \item SOLID-Prinzipien \& Code Smells
+    \end{itemize}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}{LCHC: Das Fundament wartbarer Architektur}
+  \begin{exampleblock}{Low Coupling, High Cohesion - Die Goldene Regel}
+    \textbf{Ziel:} Lose Kopplung zwischen Komponenten + Hohe Kohäsion innerhalb von Komponenten
+  \end{exampleblock}
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Niedrige Kopplung (Low Coupling):}
+    \begin{itemize}
+      \item Wenige Abhängigkeiten zwischen Komponenten
+      \item Änderungen bleiben lokal begrenzt
+      \item Komponenten können unabhängig entwickelt werden
+      \item Bessere Testbarkeit \& Wiederverwendung
+    \end{itemize}
+
+    \column{0.5\textwidth}
+    \textbf{Hohe Kohäsion (High Cohesion):}
+    \begin{itemize}
+      \item Starker innerer Zusammenhalt
+      \item Alle Teile arbeiten für gemeinsames Ziel
+      \item Klarer, eindeutiger Zweck
+      \item Änderungen betreffen meist die ganze Komponente
+    \end{itemize}
+  \end{columns}
+
+  \begin{alertblock}{Warum LCHC funktioniert}
+    Hohe Kohäsion und lose Kopplung ergänzen sich perfekt: Starke interne Bindung bei schwachen externen Abhängigkeiten.
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}{Single Responsibility Prinzip (SRP) - Der Weg zu hoher Kohäsion}
+  \begin{exampleblock}{SRP Kernaussage}
+    \textbf{``Eine Klasse sollte nur einen Grund haben, sich zu ändern.''}
+
+    Oder genauer: Dinge, die sich aus demselben Grund ändern, gehören zusammen.
+    Dinge, die sich aus unterschiedlichen Gründen ändern, gehören getrennt.
+  \end{exampleblock}
+
+  \begin{alertblock}{SRP $\rightarrow$ Hohe Kohäsion}
+    Das SRP ist der Schlüssel zu hoher Kohäsion: Wenn eine Komponente nur eine Verantwortlichkeit hat, arbeiten alle ihre Teile für dasselbe Ziel zusammen.
+  \end{alertblock}
+
+  \textbf{Praktisches Vorgehen - Frage stellen:}
+  \begin{enumerate}
+    \item Welche Personengruppen könnten Änderungen an dieser Klasse anfordern?
+    \item Welche unterschiedlichen Geschäftszweige sind betroffen?
+    \item Welche verschiedenen fachlichen Bereiche werden behandelt?
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]{SRP Beispiel - Employee-Klasse Problem}
+  \textbf{Problem - Mehrere Verantwortlichkeiten in einer Klasse:}
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class Employee {
+    private String name;
+    private double baseSalary;
+    private List<EmployeeId> manages;
+
+    // Lohnbuchhaltung
+    public double calculateSalary() {
+        return baseSalary + managementBonus();
+    }
+    private double managementBonus() {
+        return manages.size() * 500.0;
+    }
+
+    // Datenbank-Persistierung
+    public void save() {
+        Connection conn = DriverManager.getConnection(...);
+        PreparedStatement stmt = conn.prepareStatement(...);
+        stmt.setDouble(1, calculateSalary());
+        stmt.executeUpdate();
+    }
+
+    // Berichtswesen
+    public String generateReport() {
+        return String.format("Employee: %s, Salary: %.2f",
+                                name, calculateSalary());
+    }
+}
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}{SRP Beispiel - Analyse der Verantwortlichkeiten}
+  \textbf{Wer würde Änderungen an der \texttt{Employee}-Klasse anfordern?}
+  \begin{itemize}
+    \item \textcolor{red}{\textbf{Lohnbuchhaltung}}: Gehaltsberechnung ändern
+    \item \textcolor{blue}{\textbf{Datenbankadministration}}: Persistierung ändern
+    \item \textcolor{green}{\textbf{Controlling}}: Report-Format ändern
+  \end{itemize}
+
+  \textbf{Die resultierenden Probleme:}
+  \begin{itemize}
+    \item Jede Änderung kann andere, unbeteiligte Bereiche beeinflussen
+    \item Verschiedene Teams müssen an derselben Klasse arbeiten
+    \item Merge-Konflikte sind vorprogrammiert
+    \item Tests sind schwer zu isolieren und zu schreiben
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{SRP Beispiel - Lösung durch Aufspaltung}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Geschäftslogik:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class Employee {
+    private final String name;
+    private final double baseSalary;
+    private final List<EmployeeId> manages;
+    public double calculateSalary() {
+        return baseSalary + manages.size() * 500.0;
+    }
+    public String getName() { return name; }
+}
+    \end{lstlisting}
+
+    \textbf{Persistierung:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class EmployeeRepository {
+    public void save(Employee employee) {
+        Connection conn = getConnection();
+        PreparedStatement stmt = conn.prepareStatement( "UPDATE employees SET salary=? WHERE name=?");
+        stmt.setDouble(1, employee.calculateSalary());
+        stmt.setString(2, employee.getName());
+        stmt.executeUpdate();
+    }
+}
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Berichtswesen:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class EmployeeReporter {
+    public String generateReport(Employee employee) {
+        return String.format(
+            "Employee: %s\n" +
+            "Salary: %.2f EUR\n" +
+            "Status: %s",
+            employee.getName(),
+            employee.calculateSalary(),
+            getStatus(employee));
+    }
+    private String getStatus(Employee emp) {
+        // Report-spezifische Logik
+        return "Active";
+    }
+}
+    \end{lstlisting}
+  \end{columns}
+  \textbf{Vorteile:} Jede Klasse hat genau eine Verantwortlichkeit und einen Grund zur Änderung!
+\end{frame}
+
+\begin{frame}{Information Hiding Prinzip (IHP) - Definition 1}
+  \begin{exampleblock}{IHP Kernaussage}
+    "Komponenten so schneiden, dass sie Entscheidungen über die Umsetzung kapseln und nach außen verstecken."
+  \end{exampleblock}
+
+  \begin{alertblock}{IHP $\rightarrow$ Niedrige Kopplung}
+    Das IHP reduziert Kopplung, indem es Client-Code von Implementierungsdetails abschirmt.
+  \end{alertblock}
+
+  \textbf{Konkrete Vorteile:}
+  \begin{itemize}
+    \item Implementierungsdetails können geändert werden, ohne Client-Code zu beeinträchtigen
+    \item Klarere, stabilere Schnittstellen (APIs)
+    \item Bessere Testbarkeit durch definierte Grenzen
+    \item Weniger unbeabsichtigte Abhängigkeiten
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Information Hiding Prinzip (IHP) - Definition 2}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Was wird versteckt:}
+    \begin{itemize}
+      \item Datenstrukturen (private Felder)
+      \item Algorithmen (private Methoden)
+      \item Implementierungsentscheidungen
+      \item Komplexität der internen Abläufe
+    \end{itemize}
+
+    \column{0.5\textwidth}
+    \textbf{Was wird offengelegt:}
+    \begin{itemize}
+      \item Fachliche Operationen (public Methoden)
+      \item Notwendige Konfigurationsmöglichkeiten
+      \item Schnittstellen für Interaktion
+    \end{itemize}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{IHP Beispiel - Point-Klasse Evolution}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Schlecht - Keine Kapselung:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class Point {
+    public double x;
+    public double y;
+}
+
+// Client-Code:
+Point p = new Point();
+p.x = 3.0;
+p.y = 4.0;
+double distance = Math.sqrt(p.x * p.x + p.y * p.y);
+    \end{lstlisting}
+    \textbf{Problem:} Interne Darstellung ist fest verdrahtet!
+
+    \column{0.5\textwidth}
+    \textbf{Gut - Mit Kapselung:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class Point {
+    private final double x;
+    private final double y;
+
+    private Point(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public static Point fromCartesian(double x, double y) {
+        return new Point(x, y);
+    }
+
+    public double getX() { return x; }
+    public double getY() { return y; }
+
+    public double getRadius() {
+        return Math.sqrt(x*x + y*y);
+    }
+}
+
+// Client-Code:
+Point p = Point.fromCartesian(3.0, 4.0);
+double distance = p.getRadius();
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{IHP Beispiel - Umstellung auf Polarkoordinaten}
+  \textbf{Jetzt kann die interne Darstellung geändert werden:}
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class Point {
+    private final double radius;  // Jetzt polar!
+    private final double theta;
+
+    private Point(double radius, double theta) {
+        this.radius = radius;
+        this.theta = theta;
+    }
+
+    public static Point fromCartesian(double x, double y) {
+        return new Point(Math.hypot(x, y), Math.atan2(y, x));
+    }
+
+    public double getX() { return radius * Math.cos(theta); }
+    public double getY() { return radius * Math.sin(theta); }
+    public double getRadius() { return radius; }
+}
+  \end{lstlisting}
+  \begin{exampleblock}{Vorteil}
+    Client-Code muss NICHT geändert werden! Die Schnittstelle bleibt identisch.
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}{Zerlegungsstrategien: Fachlich vs. Technisch}
+  \textbf{Wie sollten wir Software strukturieren?}
+
+  {\small
+  \begin{tabular}{|l|l|l|}
+    \hline
+    \textbf{Aspekt} & \textcolor{blue}{\textbf{Fachliche Zerlegung (BEVORZUGT)}} & \textcolor{red}{\textbf{Technische Zerlegung}} \\
+    \hline
+    \textbf{Orientierung} & Geschäftsprozesse \& Domänenlogik & Technische Schichten \& Infrastruktur \\
+    \hline
+    \textbf{Teams} & Domänenexperten, Product Owner & Entwickler, Architekten, DevOps \\
+    \hline
+    \textbf{Kohäsion} & Hoch (zusammengehörige Geschäftslogik) & Mittel (gemeinsame tech. Verantwortung) \\
+    \hline
+    \textbf{Änderungen} & Lokal begrenzt, team-autonom & Bei Technologie-Updates \\
+    \hline
+    \textbf{Vorteile} & Domäne-getrieben, Team-Autonomie & Technische Konsistenz, Wiederverwendung \\
+    \hline
+    \textbf{Nachteile} & Technische Duplikation möglich & Fachliche Logik verstreut \\
+    \hline
+    \textbf{Beispiele} & \texttt{BestellService, PaymentService} & \texttt{DatabaseLayer, LoggingService} \\
+    \hline
+  \end{tabular}
+  }
+
+  \begin{exampleblock}{Best Practice}
+    \textbf{Primär fachlich zerlegen} für hohe Kohäsion, technische Aspekte als Cross-Cutting Concerns für Wiederverwendung.
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Zerlegung: Visualisiert}
+  \vspace{-0.25cm}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Benutzer - UI
+class BenutzerUI {
+    void anlegen() {
+        String name = readInput();
+        benutzerLogik.neuerBenutzer(name);
+        showMessage("Benutzer erstellt");
+    }
+    void anzeigen() {
+        benutzerLogik.alleBenutzer();
+    }
+}
+    \end{lstlisting}
+    \vspace{-0.25cm}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Benutzer - Logik
+class BenutzerLogik {
+    Benutzer neuerBenutzer(String name) {
+        Benutzer b = new Benutzer(name);
+        database.speichereBenutzer(b);
+        return b;
+    }
+    List<Benutzer> alleBenutzer() {
+        return database.ladeAlleBenutzer();
+    }
+}
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Artikel - UI
+class ArtikelUI {
+    void anlegen() {
+        String name = readInput();
+        artikelLogik.neuerArtikel(name);
+        showMessage("Artikel erstellt");
+    }
+    void suchen() {
+        artikelLogik.findeArtikel();
+    }
+}
+    \end{lstlisting}
+    \vspace{-0.25cm}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Artikel - Logik
+class ArtikelLogik {
+    Artikel neuerArtikel(String name) {
+        Artikel a = new Artikel(name);
+        database.speichereArtikel(a);
+        return a;
+    }
+    List<Artikel> findeArtikel() {
+        return database.ladeAlleArtikel();
+    }
+}
+    \end{lstlisting}
+  \end{columns}
+
+  Vertikal trennen bzw. Horizontal zusammenfassen $\rightarrow$ UI-Schicht + Logik-Schicht\\
+  Horizontal trennen bzw. Vertikal zusammenfassen $\rightarrow$ Benutzer-Modul + Artikel-Modul
+\end{frame}
+
+\begin{frame}{Kopplung verstehen - Arten und Stärken}
+  \begin{exampleblock}{Kopplung Definition}
+    \textbf{Wenn eine Änderung Δ an Komponente A dazu führt, dass B geändert werden muss, ist B bezüglich Δ an A gekoppelt.}
+  \end{exampleblock}
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Kopplungsarten (schwach $\rightarrow$ stark):}
+    \begin{enumerate}
+      \item \textcolor{green}{\textbf{Aufruf}}: B ruft Methoden von A
+      \item \textcolor{orange}{\textbf{Konstruktion}}: B erzeugt A-Instanzen
+      \item \textcolor{red}{\textbf{Vererbung}}: B erbt von A (stärkste)
+      \item \textcolor{purple}{\textbf{Unsichtbar}}: Implizite Abhängigkeiten
+    \end{enumerate}
+
+    \column{0.5\textwidth}
+    \textbf{Lösungsstrategien:}
+    \begin{itemize}
+      \item \textcolor{green}{Aufruf}: Interface einführen (DIP)
+      \item \textcolor{orange}{Konstruktion}: Dependency Injection
+      \item \textcolor{red}{Vererbung}: Komposition bevorzugen
+      \item \textcolor{purple}{Unsichtbar}: Defensive Kopien, Dokumentation
+    \end{itemize}
+  \end{columns}
+
+  \begin{exampleblock}{Merkregel}
+    Stärkere Kopplung = größere Probleme. Vererbung ist fast immer die schlechteste Option!
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Kopplung durch Verletzung des IHP (1/2)}
+  \textbf{Extrem problematisch - Geteilter, änderbarer Zustand:}
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class Interpolation {
+    private final int[] array;
+
+    public Interpolation(int[] eingabe) {
+        Arrays.sort(eingabe);  // sortiert eingabe in-place!
+        this.array = eingabe;  // Referenz geteilt!
+    }
+
+    public int search(int value) {
+        return Arrays.binarySearch(array, value);
+    }
+}
+
+// Client-Code kann array zerstören:
+int[] foo = new int[] {1, -2, 3, 7};
+Interpolation ip = new Interpolation(foo);
+
+// Später im Code:
+for(int i=0; i < foo.length; i++) {
+    foo[i] = new Random().nextInt();  // Zerstört Sortierung!
+}
+// ip.search() funktioniert nicht mehr korrekt!
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Kopplung durch Verletzung des IHP (2/2)}
+  \textbf{Die Lösung - Defensive Kopie:}
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class Interpolation {
+    private final int[] array;
+
+    public Interpolation(int[] eingabe) {
+        // Defensive Kopie erstellen
+        this.array = Arrays.copyOf(eingabe, eingabe.length);
+        Arrays.sort(this.array);  // Jetzt sicher!
+    }
+
+    public int search(int value) {
+        return Arrays.binarySearch(array, value);
+    }
+
+    // Auch bei Rückgaben defensive Kopie:
+    public int[] getArray() {
+        return Arrays.copyOf(array, array.length);
+    }
+}
+  \end{lstlisting}
+  \begin{alertblock}{Wichtig}
+    \texttt{final} bei Arrays verhindert nur Neuzuweisung, nicht Inhaltsänderung!
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]{Law of Demeter - ``Sprich nur mit direkten Freunden''}
+  \begin{exampleblock}{Law of Demeter Regel}
+    Ein Objekt sollte nur mit seinen ``unmittelbaren Freunden'' sprechen, nicht mit deren Freunden.
+  \end{exampleblock}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Verletzung - Rechnung kennt Produkt:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+class Rechnung {
+    double berechneZeilenpreis(Position pos) {
+        // BAD: Rechnung kennt Position UND Produkt
+        return pos.getAnzahl() * pos.getProdukt().getPreis();
+    }
+}
+class Position {
+    private int anzahl;
+    private Produkt produkt;
+    public int getAnzahl() { return anzahl; }
+    public Produkt getProdukt() { return produkt; }
+}
+class Produkt {
+    private double preis;
+    public double getPreis() { return preis; }
+}
+    \end{lstlisting}
+    \column{0.5\textwidth}
+    \textbf{Korrekt - Position kapselt Details:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+class Rechnung {
+    double berechneZeilenpreis(Position pos) {
+        // GOOD: Rechnung kennt nur Position
+        return pos.getZeilenpreis();
+    }
+}
+class Position {
+    private int anzahl;
+    private Produkt produkt;
+    public int getAnzahl() { return anzahl; }
+    // Position kapselt Produktdetails
+    public double getZeilenpreis() {
+        return anzahl * produkt.getPreis();
+    }
+}
+class Produkt {
+    private double preis;
+    public double getPreis() { return preis; }
+}
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Kopplung durch Aufruf und Konstruktion}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Problem - Hart verdrahtet:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+class CountingSummarizer {
+    private Segmentation segmentation;
+
+    public CountingSummarizer() {
+        // Hard gekoppelt!
+        this.segmentation = new AgeSegmentation();
+    }
+
+    public Map<String, Integer> summarize(List<Customer> customers) {
+        Map<String, List<Customer>> segments =
+            segmentation.getSegments(customers);
+
+        return segments.entrySet().stream()
+            .collect(toMap(
+                Map.Entry::getKey,
+                e -> e.getValue().size()));
+    }
+}
+    \end{lstlisting}
+    \textbf{Problem:} Kann nicht getestet oder erweitert werden!
+    \column{0.5\textwidth}
+    \textbf{Lösung - Dependency Injection:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+interface Segmentation {
+    Map<String, List<Customer>> getSegments(
+        List<Customer> customers);
+}
+
+class CountingSummarizer {
+    private final Segmentation segmentation;
+
+    // Injiziert via Konstruktor
+    public CountingSummarizer(
+            Segmentation segmentation) {
+        this.segmentation = segmentation;
+    }
+
+    public Map<String, Integer> summarize(
+            List<Customer> customers) {
+        Map<String, List<Customer>> segs =
+            segmentation.getSegments(customers);
+
+        return segs.entrySet().stream()
+            .collect(toMap(
+                Map.Entry::getKey,
+                e -> e.getValue().size()));
+    }
+}
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Kohäsion verstehen - Das interne Bindemittel}
+  \begin{exampleblock}{Kohäsion - Das \textbf{C} in LCHC}
+    \textbf{Interne Bindung innerhalb einer Komponente} - alle Teile arbeiten zusammen!
+  \end{exampleblock}
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{\textcolor{green}{Hohe Kohäsion} erkennen:}
+    \begin{itemize}
+      \item Methoden nutzen dieselben Attribute
+      \item Klassen-Zweck in 1 Satz beschreibbar
+      \item SRP eingehalten (ein Änderungsgrund)
+      \item Zusammengehörige Daten gekapselt
+    \end{itemize}
+
+    \column{0.5\textwidth}
+    \textbf{\textcolor{red}{Niedrige Kohäsion} erkennen:}
+    \begin{itemize}
+      \item Methoden nutzen verschiedene Attributsätze
+      \item Klasse schwer beschreibbar
+      \item Methoden könnten woanders stehen
+      \item Utility-Klassen mit unzusammenhängenden Methoden
+    \end{itemize}
+  \end{columns}
+
+  \begin{alertblock}{Quick-Check}
+    \textbf{Hohe Kohäsion?} Kann ich den Zweck der Klasse in einem klaren Satz beschreiben?
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]{Kohäsion Beispiel - Schlechte Kohäsion}
+  \textbf{Problem - Customer mit verschiedenen Verantwortlichkeiten:}
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+class Customer {
+    // Verschiedene Attributsätze
+    List<Order> orders;           // Order-Management
+    String emailAddress;          // Kommunikation
+    String name;                  // Basis-Daten
+    String shippingAddress;       // Versand
+
+    // Methoden greifen auf verschiedene Attributsätze zu
+    List<Order> getOrders() { // -> orders
+        return orders;
+    }
+
+    void sendWelcomeEmail() { // -> emailAddress, name
+        EmailService.send(emailAddress, "Welcome " + name + "!");
+    }
+
+    void printShippingLabel() { // -> name, shippingAddress
+        System.out.println("Ship to: " + name);
+        System.out.println("Address: " + shippingAddress);
+    }
+}
+  \end{lstlisting}
+  \textbf{Problem:} Niedrige Kohäsion - jede Methode nutzt andere Attribute!
+\end{frame}
+
+\begin{frame}[fragile]{Kohäsion Beispiel - LCHC durch Aufspaltung erreichen}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+class Customer {
+    private final String name;
+    private final CustomerId id;
+    public String getName() { return name; }
+    public CustomerId getId() { return id; }
+    // ...
+}
+
+class OrderManager {
+    private final List<Order> orders;
+    private final CustomerId customerId;
+    public void addOrder(Order order) {
+        orders.add(order);
+    }
+    public List<Order> getOrderHistory() {
+        return List.copyOf(orders);
+    }
+    public double getTotalOrderValue() {
+        return orders.stream()
+            .mapToDouble(Order::getValue)
+            .sum();
+    }
+}
+    \end{lstlisting}
+    \column{0.5\textwidth}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+class NotificationService {
+    private final String emailAddress;
+    private final String customerName;
+    public void sendWelcomeEmail() {
+        EmailService.send(emailAddress,
+            "Welcome " + customerName + "!");
+    }
+    public void sendOrderConfirmation(Order o) {
+        EmailService.send(emailAddress,
+            "Order " + o.getId() + " confirmed");
+    }
+}
+class ShippingService {
+    private final String customerName;
+    private final Address shippingAddress;
+    public void printShippingLabel() {
+        System.out.println("Ship to: " + customerName);
+        System.out.println("Address: " + shippingAddress);
+    }
+    public double calculateShippingCost() {
+        return shippingAddress.getShippingZone().getBaseCost();
+    }
+}
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{LCHC $\rightarrow$ Code Smells: Erkennungsmuster}
+  \textbf{Viele Code Smells verletzen das LCHC Prinzip!}
+
+  {\small
+  \begin{tabular}{|l|c|c|l|}
+    \hline
+    \textbf{Code Smell} & \textbf{Kohäsion} & \textbf{Kopplung} & \textbf{Erkennungsmuster} \\
+    \hline
+    Large Class & \textcolor{red}{niedrig} & - & Klasse hat mehrere verschiedene Aufgaben \\
+    \hline
+    Divergent Change & \textcolor{red}{niedrig} & - & ``Diese Klasse ändert sich, wenn...'' hat $>1$ Antwort \\
+    \hline
+    Data Clumps & \textcolor{red}{niedrig} & - & Parallele Arrays oder Parameter-Gruppen \\
+    \hline
+    Feature Envy & - & \textcolor{red}{hoch} & Methode nutzt andere Klasse mehr als eigene \\
+    \hline
+    Message Chains & - & \textcolor{red}{hoch} & \texttt{a.getB().getC().getD()} \\
+    \hline
+    Shotgun Surgery & - & \textcolor{red}{hoch} & Eine Änderung betrifft $>3$ Klassen \\
+    \hline
+  \end{tabular}
+  }
+
+  \begin{exampleblock}{Template für Refactoring-Aufgaben}
+    \begin{enumerate}
+      \item Code Smell identifizieren
+      \item LCHC-Verletzung und ggf. Prinzip-Verletzung benennen
+      \item Lösung: Extract Class / Move Method / Hide Delegate / etc.
+    \end{enumerate}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}{Von Prinzipien zu praktischer Anwendung}
+  \textbf{Zusammenhang der Konzepte:}
+
+  \begin{center}
+    \begin{tabular}{|c|l|}
+      \hline
+      \textbf{Ebene} & \textbf{Prinzip/Konzept} \\
+      \hline
+      \hline
+      \textcolor{hhuBlau}{\textbf{Grundlage}} & \textbf{LCHC} - Low Coupling, High Cohesion \\
+      \hline
+      \multirow{2}{*}{\textcolor{hhuGruen}{\textbf{Kernprinzipien}}} & \textbf{SRP} - Single Responsibility (für hohe Kohäsion) \\
+      \cline{2-2}
+      & \textbf{IHP} - Information Hiding (für niedrige Kopplung) \\
+      \hline
+      \multirow{2}{*}{\textcolor{hhuOrange}{\textbf{Strategien}}} & \textbf{Fachliche Zerlegung} (aus SRP abgeleitet) \\
+      \cline{2-2}
+      & \textbf{Law of Demeter} (aus IHP abgeleitet) \\
+      \hline
+      \textcolor{hhuRot}{\textbf{Erkennung}} & \textbf{Code Smells} - Indikatoren für Verletzungen \\
+      \hline
+    \end{tabular}
+  \end{center}
+
+  \vspace{0.5cm}
+
+  \textbf{Beziehungen:}
+  \begin{itemize}
+    \item LCHC ist das \textbf{Grundprinzip} und der Bewertungsmaßstab für wartbare Architektur
+    \item SRP und IHP sind die \textbf{praktischen Umsetzungen} von LCHC
+    \item Fachliche Zerlegung und Law of Demeter sind \textbf{Strategien}
+    \item Code Smells sind \textbf{Warnsignale} für Prinzipien-Verletzungen
+  \end{itemize}
+\end{frame}
+
+% ===========================
+% Vererbung & Polymorphismus
+% ===========================
+
+\subsection{Vererbung \& Polymorphismus}
+
+\begin{frame}{Arten des Polymorphismus in Java}
+  \textbf{Polymorphismus = ``Vielgestaltigkeit'' - Ein Interface, verschiedene Implementierungen}
+
+  \begin{description}
+    \item[\textbf{1. Ad-hoc Polymorphismus (Overloading)}]
+      \begin{itemize}
+        \item Methoden-Overloading: Derselbe Name, verschiedene Parameter
+        \item Operator-Overloading: +-Operator für String und int
+        \item Compile-time Entscheidung
+      \end{itemize}
+
+    \item[\textbf{2. Parametrischer Polymorphismus (Generics)}]
+      \begin{itemize}
+        \item Typ-Parameter für Klassen und Methoden
+        \item \texttt{List<String>}, \texttt{<T> void process(T item)}
+        \item Nicht spezifisch für OOP
+      \end{itemize}
+
+    \item[\textbf{3. Vererbungspolymorphismus}]
+      \begin{itemize}
+        \item Spezifisch für objektorientierte Programmierung
+        \item Verschiedene Typen über gemeinsame Schnittstelle verwenden
+        \item Runtime-Entscheidung über dynamische Methodenbindung
+      \end{itemize}
+  \end{description}
+
+  \begin{exampleblock}{Heute: Fokus auf Vererbungspolymorphismus}
+    Wie Interfaces und Vererbung zur Entkopplung beitragen können.
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Overloading vs. Overriding}
+  \textbf{Overloading (Überladen):}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class Calculator {
+    // Verschiedene add-Methoden
+    public int add(int a, int b) {
+        return a + b;
+    }
+
+    public double add(double a, double b) {
+        return a + b;
+    }
+
+    public String add(String a, String b) {
+        return a + b;
+    }
+
+    // Compiler wählt basierend auf Parametern
+}
+
+// Verwendung:
+Calculator calc = new Calculator();
+int result1 = calc.add(5, 3);        // int-Variante
+double result2 = calc.add(5.5, 3.2); // double-Variante
+String result3 = calc.add("Hi", "!"); // String-Variante
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \begin{itemize}
+      \item Mehrere Methoden in einer Klasse
+      \item Gleicher Name, verschiedene Parameter
+      \item Compile-time Polymorphismus
+      \item Statische Methodenauswahl
+    \end{itemize}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Overloading vs. Overriding}
+  \textbf{Overriding (Überschreiben):}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+abstract class Animal {
+    public abstract String makeSound();
+    public void sleep() {
+        System.out.println("Zzz...");
+    }
+}
+class Dog extends Animal {
+    @Override
+    public String makeSound() {
+        return "Woof!";
+    }
+}
+class Cat extends Animal {
+    @Override
+    public String makeSound() {
+        return "Meow!";
+    }
+}
+
+// Verwendung:
+Animal animal = new Dog();  // Polymorphie
+System.out.println(animal.makeSound()); // "Woof!" - Runtime
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \begin{itemize}
+      \item Methode aus Superklasse überschreiben
+      \item Gleiche Signatur (Name + Parameter)
+      \item Runtime Polymorphismus
+      \item Dynamische Methodenbindung
+    \end{itemize}
+
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Interface-Vererbung vs. Klassen-Vererbung}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Interface-Vererbung (BEVORZUGT):}
+    \begin{itemize}
+      \item Harmlose Kopplung
+      \item Nur Namen und Signaturen
+      \item Gutes Mittel zur Entkopplung
+      \item Mehrfach-Vererbung möglich
+    \end{itemize}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+interface Drawable { void draw(); }
+interface Movable { void move(int dx, int dy); }
+
+class GameCharacter
+        implements Drawable, Movable {
+    @Override
+    public void draw() { /* ... */ }
+    @Override
+    public void move(int dx, int dy) { /* ... */ }
+}
+    \end{lstlisting}
+    \column{0.5\textwidth}
+    \textbf{Klassen-Vererbung (VORSICHTIG):}
+    \begin{itemize}
+      \item Erzeugt starke Kopplung
+      \item Bricht Kapselung von Objekten
+      \item Gemeinsame Entwicklung nötig
+      \item Nur Einfach-Vererbung möglich
+    \end{itemize}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+abstract class Vehicle {
+    protected int speed = 0;
+    public void accelerate() {
+        speed += 10;
+    }
+    public abstract void startEngine();
+}
+
+class Car extends Vehicle {
+    @Override
+    public void startEngine() { /* ... */ }
+    public void brake() {
+        speed -= 15;
+    }
+}
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Polymorphismus zur Entkopplung - Vorher}
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class Employee {
+    private boolean management;
+    private List<EmployeeId> manages;
+    private Salary baseSalary;
+    public Salary computeSalary() {
+        if (management) {
+            return baseSalary.addManagementBonus(
+                manages.size());
+        } else {
+            return baseSalary;
+        }
+    }
+    public String getDescription() {
+        if (management) {
+            return "Manager with " + manages.size() +
+                   " reports";
+        } else {
+            return "Regular employee";
+        }
+    }
+}
+  \end{lstlisting}
+  \begin{alertblock}{Problem}
+  Jeder neue Employee-Typ erfordert Änderungen in ALLEN Methoden (OCP-Verletzung).
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]{Polymorphismus zur Entkopplung - Nachher}
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+interface Employee {
+    Salary computeSalary();
+    String getDescription();
+}
+class RegularEmployee implements Employee {
+    private final Salary baseSalary;
+    public Salary computeSalary() { return baseSalary; }
+    public String getDescription() { return "Regular employee"; }
+}
+class Manager implements Employee {
+    private final Salary baseSalary;
+    private final List<EmployeeId> manages;
+    public Salary computeSalary() {
+        return baseSalary.addManagementBonus(manages.size());
+    }
+    public String getDescription() {
+        return "Manager with " + manages.size() + " reports";
+    }
+}
+  \end{lstlisting}
+  \begin{exampleblock}{Vorteil}
+  Neue Typen können ohne Änderung bestehender Klassen hinzugefügt werden!
+  Open/Closed Principle erfüllt - offen für Erweiterung, geschlossen für Modifikation!
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Kopplung durch Vererbung - InstrumentedHashSet Problem}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class InstrumentedHashSet<E> extends HashSet<E> {
+    private int addCount = 0;
+    @Override
+    public boolean add(E e) {
+        addCount++;
+        return super.add(e);
+    }
+    @Override
+    public boolean addAll(Collection<? extends E> c) {
+        addCount += c.size();  // PROBLEM: Doppeltes Zählen!
+        return super.addAll(c);
+    }
+    public int getAddCount() { return addCount; }
+}
+    \end{lstlisting}
+    \column{0.5\textwidth}
+    \textbf{Folgender Test schlägt fehl:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+@Test
+void testAddCount() {
+    InstrumentedHashSet<Integer> set = new InstrumentedHashSet<>();
+    set.addAll(List.of(1, 2, 3));
+
+    // Erwartet: 3, Tatsächlich: 6
+    assertThat(set.getAddCount()).isEqualTo(3);
+}
+    \end{lstlisting}
+  \end{columns}
+
+  \textbf{Warum schlägt er fehl?}
+  \begin{itemize}
+    \item \texttt{HashSet.addAll()} ruft intern \texttt{add()} auf
+    \item Unsere \texttt{add()}-Methode wird aufgerufen $\rightarrow$ Jedes Element wird zweimal gezählt
+    \item \textbf{Kopplung an interne Implementierung!}
+    \item Bricht Kapselung und erzeugt unsichtbare Abhängigkeiten
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Lösung durch Komposition statt Vererbung}
+  \textbf{Bessere Lösung - Komposition verwenden:}
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class InstrumentedSet<E> implements Set<E> {
+    private int addCount = 0;
+    private final Set<E> set;  // Komposition statt Vererbung
+    public InstrumentedSet(Set<E> set) {
+        this.set = set;
+    }
+    @Override
+    public boolean add(E e) {
+        addCount++;
+        return set.add(e);  // Delegation
+    }
+    @Override
+    public boolean addAll(Collection<? extends E> c) {
+        addCount += c.size();
+        return set.addAll(c);  // Delegation - kein doppeltes Zählen!
+    }
+    public int getAddCount() { return addCount; }
+    // Alle anderen Set-Methoden an set delegieren...
+    @Override public int size() { return set.size(); }
+    // ... usw.
+}
+  \end{lstlisting}
+  \textbf{Vorteile:} Keine Kopplung an interne Implementierung, jede Set-Implementierung funktioniert!
+\end{frame}
+
+
+\begin{frame}[fragile]{Refused Bequest Code Smell}
+  \begin{exampleblock}{Refused Bequest Definition}
+    Subklasse ``verweigert'' geerbte Methoden der Superklasse, meist durch \texttt{UnsupportedOperationException}.
+  \end{exampleblock}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Problematisches Beispiel:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public interface Bird {
+    void fly();
+    void eat();
+}
+
+public class Ostrich implements Bird {
+    @Override
+    public void fly() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void eat() {
+        // ...
+    }
+}
+    \end{lstlisting}
+    \column{0.5\textwidth}
+    \textbf{Probleme:}
+    \begin{itemize}
+      \item \textbf{Verletzung des Liskov Substitution Prinzips}
+      \item Ein Strauß (\texttt{Ostrich}) ist kein vollwertiger Vogel (\texttt{Bird}) im Sinne des Interfaces.
+      \item Interface zu groß (ISP-Verletzung)
+    \end{itemize}
+    \textbf{Lösung:}
+    \begin{itemize}
+        \item Interfaces aufteilen (Interface Segregation Principle)
+    \end{itemize}
+  \end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]{Refused Bequest: Lösung durch Interface Segregation}
+  \begin{exampleblock}{Lösung: Kleinere, spezifischere Interfaces}
+    Die Funktionalität wird in separate Interfaces aufgeteilt. Klassen implementieren nur, was sie wirklich können.
+  \end{exampleblock}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public interface Bird {
+    void eat();
+}
+public interface FlyingBird extends Bird {
+    void fly();
+}
+public class Ostrich implements Bird {
+    @Override
+    public void eat() { /* ... */ }
+    // Keine fly() Methode mehr nötig!
+}
+public class Swallow implements FlyingBird {
+    @Override
+    public void fly() { /* ... */ }
+    @Override
+    public void eat() { /* ... */ }
+}
+    \end{lstlisting}
+\end{frame}
+
+% ===========================
+% SOLID-Prinzipien
+% ===========================
+
+\subsection{SOLID-Prinzipien}
+
+\begin{frame}{SOLID-Prinzipien Überblick}
+  \textbf{SOLID - Fünf fundamentale Prinzipien für wartbaren objektorientierten Code:}
+
+  \begin{description}
+    \item[\textbf{S}ingle Responsibility] Eine Klasse sollte nur einen Grund zur Änderung haben
+    \item[\textbf{O}pen/Closed] Offen für Erweiterungen, geschlossen für Modifikationen
+    \item[\textbf{L}iskov Substitution] Subtypen müssen durch Supertypen ersetzbar sein
+    \item[\textbf{I}nterface Segregation] Clients sollen nicht von ungenutzten Methoden abhängen
+    \item[\textbf{D}ependency Inversion] Abhängigkeiten auf Abstraktionen, nicht auf Konkretionen
+  \end{description}
+
+  \begin{exampleblock}{Zusammenhang mit vorherigen Themen}
+    \begin{itemize}
+      \item SRP kennen wir bereits ausführlich
+      \item OCP wird durch Polymorphismus erreicht
+      \item LSP verhindert Refused Bequest
+      \item ISP \& DIP reduzieren Kopplung
+    \end{itemize}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Open/Closed Principle (OCP) - Verletzung}
+  \begin{exampleblock}{OCP Definition}
+    \textbf{``Software-Entitäten sollten offen für Erweiterungen, aber geschlossen für Modifikationen sein.''}
+  \end{exampleblock}
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class AreaCalculator {
+    public double calculateArea(Shape shape) {
+        switch (shape.getType()) {
+            case RECTANGLE:
+                Rectangle rect = (Rectangle) shape;
+                return rect.getWidth() * rect.getHeight();
+            case CIRCLE:
+                Circle circle = (Circle) shape;
+                return Math.PI * circle.getRadius() * circle.getRadius();
+            default:
+                throw new IllegalArgumentException("Unknown shape type");
+        }
+    }
+}
+  \end{lstlisting}
+  \begin{alertblock}{Problem}
+    Jede neue \texttt{Shape}-Klasse erfordert eine \textbf{Änderung} in der \texttt{AreaCalculator}-Klasse.
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]{Open/Closed Principle (OCP) - Lösung}
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+interface Shape {
+    double calculateArea();
+}
+class Rectangle implements Shape {
+    private final double width, height;
+    // ... constructor ...
+    @Override
+    public double calculateArea() { return width * height; }
+}
+class Circle implements Shape {
+    private final double radius;
+    // ... constructor ...
+    @Override
+    public double calculateArea() { return Math.PI * radius * radius; }
+}
+// Neue Shapes können hinzugefügt werden ohne bestehenden Code zu ändern!
+class Point implements Shape {
+    @Override
+    public double calculateArea() { return 0.0; }
+}
+  \end{lstlisting}
+  \begin{exampleblock}{Vorteil}
+    Das System ist nun offen für Erweiterungen (neue \texttt{Shape}s), aber geschlossen für Modifikationen (bestehender Code muss nicht geändert werden).
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{OCP in der Praxis - Template Method Pattern}
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+abstract class DataProcessor {
+    // Template Method - definiert Algorithmus-Struktur (geschlossen)
+    public final void processData() {
+        Data data = readData();
+        Data transformed = transformData(data);
+        writeData(transformed);
+    }
+    // Hooks für Subklassen - offen für Erweiterung
+    protected abstract Data readData();
+    protected abstract Data transformData(Data data);
+    protected abstract void writeData(Data data);
+}
+class CSVProcessor extends DataProcessor {
+    @Override protected Data readData() { /* CSV-spezifisch */ return null; }
+    @Override protected Data transformData(Data data) { /* ... */ return null; }
+    @Override protected void writeData(Data data) { /* ... */ }
+}
+class XMLProcessor extends DataProcessor {
+    @Override protected Data readData() { /* XML-spezifisch */ return null; }
+    @Override protected Data transformData(Data data) { /* ... */ return null; }
+    @Override protected void writeData(Data data) { /* ... */ }
+}
+  \end{lstlisting}
+  \textbf{Vorteil:} Die Algorithmus-Struktur ist \textbf{geschlossen}, die Implementierungsdetails sind \textbf{offen} für Erweiterung.
+\end{frame}
+
+\begin{frame}[fragile]{Liskov Substitution Principle (LSP) - Verletzung}
+  \begin{exampleblock}{LSP Definition}
+    \textbf{"Subtypen müssen durch Supertypen ersetzbar sein, ohne die Korrektheit des Programms zu beeinträchtigen."}
+  \end{exampleblock}
+
+  \vspace{-0.2cm}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+class Rectangle {
+    // ... (Rechteck with width, height und den jeweiligen settern)
+    public int getArea() { return width * height; }
+}
+
+// Test zeigt LSP-Verletzung:
+public void testRectangle(Rectangle rect) {
+    rect.setWidth(5);
+    rect.setHeight(4);
+    assert rect.getArea() == 20;  // Failt für Square! (=16)
+}
+    \end{lstlisting}
+    \column{0.5\textwidth}
+
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+class Square extends Rectangle {
+    @Override
+    public void setWidth(int width) {
+        this.width = width;
+        this.height = width;  // Quadrat-Eigenschaft
+    }
+    @Override
+    public void setHeight(int height) {
+        this.width = height;
+        this.height = height; // Quadrat-Eigenschaft
+    }
+}
+    \end{lstlisting}
+  \end{columns}
+  \vspace{-0.2cm}
+
+  \begin{alertblock}{Problem}
+    Ein \texttt{Square} verhält sich anders als ein \texttt{Rectangle} erwartet wird. Der Verhaltensvertrag der Superklasse wird gebrochen.
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]{Liskov Substitution Principle (LSP) - Lösung}
+  \textbf{LSP-konforme Lösung durch gemeinsames Interface:}
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+interface Shape {
+    int getArea();
+}
+class Rectangle implements Shape {
+    private final int width, height;
+    public Rectangle(int width, int height) {
+        this.width = width;
+        this.height = height;
+    }
+    public int getArea() { return width * height; }
+}
+class Square implements Shape {
+    private final int side;
+    public Square(int side) { this.side = side; }
+    public int getArea() { return side * side; }
+}
+  \end{lstlisting}
+  \begin{exampleblock}{Ergebnis}
+    Beide Klassen verhalten sich korrekt als \texttt{Shape}. Es gibt keine vererbte Implementierung, die gebrochen werden kann.
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Interface Segregation Principle (ISP) - Verletzung}
+  \begin{exampleblock}{ISP Definition}
+    \textbf{``Clients sollen nicht von Methoden abhängen, die sie nicht nutzen.''}
+  \end{exampleblock}
+  \textbf{ISP-Verletzung durch ein zu großes Interface:}
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+interface Machine {
+    void print();
+    void staple();
+}
+class SimplePrinter implements Machine {
+    public void print() { /* OK */ }
+    // UNSINNIG für einen einfachen Drucker!
+    public void staple() {
+        throw new UnsupportedOperationException();
+    }
+}
+  \end{lstlisting}
+  \begin{alertblock}{Problem}
+    Die \texttt{SimplePrinter}-Klasse wird gezwungen, eine \texttt{staple}-Methode zu implementieren, die sie nicht unterstützt. Dies ist ein Zeichen für ein schlechtes Interface-Design.
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]{Interface Segregation Principle (ISP) - Lösung}
+  \textbf{ISP-konforme Lösung durch kleine, fokussierte Interfaces:}
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+interface Printer {
+    void print();
+}
+interface Stapler {
+    void staple();
+}
+// Implementiert nur, was es kann
+class SimplePrinter implements Printer {
+    @Override public void print() { /* ... */ }
+}
+// Kombiniert Fähigkeiten nach Bedarf
+class MultifunctionPrinter implements Printer, Stapler {
+    @Override public void print() { /* ... */ }
+    @Override public void staple() { /* ... */ }
+}
+  \end{lstlisting}
+  \begin{exampleblock}{Vorteil}
+    Klassen implementieren nur die Interfaces, die sie wirklich benötigen. Der Code ist klarer und es gibt keine Notwendigkeit für leere Implementierungen oder Exceptions.
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Dependency Inversion Principle (DIP) - Verletzung}
+  \begin{exampleblock}{DIP Definition}
+    \textbf{``Abhängigkeiten sollten auf Abstraktionen zeigen, nicht auf Konkretionen.''}
+  \end{exampleblock}
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+class EmailService { // Konkrete Implementierung
+    public void sendEmail(String to, String message) {
+        System.out.println("Sending email via SMTP to " + to);
+    }
+}
+class NotificationService {
+    private EmailService emailService;  // Konkrete Abhängigkeit!
+    public NotificationService() {
+        this.emailService = new EmailService();  // Hard gekoppelt!
+    }
+    public void sendNotification(String user, String message) {
+        emailService.sendEmail(user, message);
+    }
+}
+  \end{lstlisting}
+  \begin{alertblock}{Problem}
+    \texttt{NotificationService} ist direkt an \texttt{EmailService} gekoppelt. Es können keine anderen Benachrichtigungsarten (SMS, Push) verwendet werden und die Klasse ist schwer zu testen.
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]{Dependency Inversion Principle (DIP) - Lösung}
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+interface MessageSender {  // Abstraktion
+    void sendMessage(String to, String message);
+}
+class EmailService implements MessageSender {
+    @Override
+    public void sendMessage(String to, String message) {
+        System.out.println("Sending email via SMTP to " + to);
+    }
+}
+class SMSService implements MessageSender { // Weitere Implementierung
+    @Override
+    public void sendMessage(String to, String message) {
+        System.out.println("Sending SMS to " + to);
+    }
+}
+class NotificationService {
+    private MessageSender messageSender;  // Abhängigkeit von Abstraktion!
+    // Abhängigkeit wird von außen injiziert (Dependency Injection)
+    public NotificationService(MessageSender messageSender) {
+        this.messageSender = messageSender;
+    }
+    public void sendNotification(String user, String message) {
+        messageSender.sendMessage(user, message);
+    }
+}
+  \end{lstlisting}
+\end{frame}
+
+% ===========================
+% Code Smells im Großen
+% ===========================
+
+\subsection{Code Smells im Großen}
+
+\begin{frame}{Code Smells im Großen - Überblick}
+  \textbf{Code Smells ``im Großen'' betreffen die Struktur zwischen Klassen und Komponenten:}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Strukturelle Probleme:}
+    \begin{itemize}
+      \item \textbf{Large Class} - Zu viele Verantwortlichkeiten
+      \item \textbf{Primitive Obsession} - Fehlende Fachobjekte
+      \item \textbf{Data Clumps} - Zusammengehörige Daten getrennt
+    \end{itemize}
+    \textbf{Änderungs-Probleme:}
+    \begin{itemize}
+      \item \textbf{Divergent Change} - Eine Klasse, viele Änderungsgründe
+      \item \textbf{Shotgun Surgery} - Eine Änderung, viele Stellen
+    \end{itemize}
+    \column{0.5\textwidth}
+    \textbf{Kopplungs-Probleme:}
+    \begin{itemize}
+      \item \textbf{Feature Envy} - Klasse nutzt andere Klasse zu stark
+      \item \textbf{Message Chains} - Lange Aufrufketten
+    \end{itemize}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Code Smells im Großen - Überblick}
+  \begin{alertblock}{Wichtig für Klausur}
+    \begin{itemize}
+      \item Zusammenhang zu SOLID-Prinzipien verstehen
+      \item Erkennungsmerkmale der verschiedenen Smells
+      \item Wann Behebung sinnvoll ist und wann nicht
+    \end{itemize}
+  \end{alertblock}
+\end{frame}
+
+
+\begin{frame}[fragile]{Large Class Code Smell}
+  \textbf{Definition:} Klassen mit sehr vielen Methoden und Verantwortlichkeiten.
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class Webcrawler {
+    // Viele verschiedene Datenstrukturen
+    Queue<URL> toVisit; Map<URL, String> visited; Map<String, List<URL>> keywordIndex;
+    Set<String> blockedDomains; HttpClient httpClient;
+
+    // 50+ Methoden für verschiedene Aufgaben:
+    // URL-Management
+    void addUrl(URL url) { /* ... */ }
+    URL nextUrl() { /* ... */ }
+    // HTTP-Operationen
+    String downloadPage(URL url) { /* ... */ }
+    // Content-Parsing
+    List<URL> extractLinks(String content) { /* ... */ }
+    List<String> extractKeywords(String content) { /* ... */ }
+    // Indexing
+    void indexKeywords(String content, URL url) { /* ... */ }
+}
+  \end{lstlisting}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Probleme:}
+    \begin{itemize}
+      \item Verstößt gegen SRP
+      \item Schwer zu verstehen \& zu testen
+      \item Hohes Konfliktpotential
+    \end{itemize}
+    \column{0.5\textwidth}
+    \textbf{Refactoring:}
+    \begin{itemize}
+      \item \textbf{Extract Class} (z.B. \texttt{PageDownloader}, \texttt{LinkExtractor}, \texttt{KeywordIndex})
+      \item \textbf{Extract Superclass}
+    \end{itemize}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Primitive Obsession Code Smell}
+  \textbf{Definition:} Verwendung primitiver Datentypen statt spezifischer Fachobjekte.
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Problematisches Beispiel:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+class Konto {
+    private final String iban;
+    private final String name;
+
+    public Konto(String name, String iban) {
+        // IBAN-Validierung in Konto-Klasse!
+        if (!gueltigeIBAN(iban)) {
+            throw new IllegalArgumentException();
+        }
+        this.iban = iban;
+        this.name = name;
+    }
+    private static boolean gueltigeIBAN(String iban) {
+        if (iban.length() != 22) return false;
+        // ...
+        return true;
+    }
+}
+    \end{lstlisting}
+    \column{0.5\textwidth}
+    \textbf{Verbesserte Lösung:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+record IBAN(String nummer) {
+    public IBAN(String nummer) {
+        if (!isValid(nummer)) {
+            throw new IllegalArgumentException();
+        }
+        this.nummer = nummer.toUpperCase();
+    }
+    private static boolean isValid(String iban) {
+        // ...
+    }
+}
+class Konto {
+    private final IBAN iban;
+    private final String name;
+    public Konto(String name, IBAN iban) {
+        this.iban = iban; // Bereits validiert!
+        this.name = name;
+    }
+}
+    \end{lstlisting}
+  \end{columns}
+  \textbf{Vorteile:} Höhere Kohäsion, Typ-sichere Schnittstellen, fachliche Semantik.
+\end{frame}
+
+\begin{frame}[fragile]{Data Clumps Code Smell}
+  \textbf{Definition:} Mehrere Datenelemente werden immer zusammen verwendet, aber getrennt modelliert.
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Problematisches Beispiel:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public void printStudent(String name, String email, int punkte) {
+    System.out.println(name + " (" + email + "): " + punkte);
+}
+
+public static void main(String[] args) {
+    // Parallele Arrays - ein Data Clump!
+    int[] punkte = {79, 49, 90, 33};
+    String[] namen = {"Susanne", "Domenica", "Majid", "Jonas"};
+    String[] emails =
+        {"sus@hhu.de", "dom@hhu.de", "maj@hhu.de", "jon@hhu.de"};
+
+    // Fehleranfällig: Arrays müssen synchron bleiben!
+    for (int i = 0; i < namen.length; i++) {
+        if (punkte[i] >= 45) {
+            printStudent(namen[i], emails[i], punkte[i]);
+        }
+    }
+    // Beispielhaftes Problem:
+    // Sortierung nach Punkten sehr umständlich
+}
+    \end{lstlisting}
+    \column{0.5\textwidth}
+    \textbf{Verbesserte Lösung:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public record TeilnehmerIn(
+        String name, String email, int punkte) {
+    public boolean hatBestanden() {
+        return punkte >= 45;
+    }
+}
+public void printStudent(TeilnehmerIn student) {
+    System.out.println(student.name() + " (" +
+        student.email() + "): " + student.punkte());
+}
+public static void main(String[] args) {
+    List<TeilnehmerIn> teilnehmer = List.of(
+        new TeilnehmerIn("Susanne", "sus@hhu.de", 79),
+        new TeilnehmerIn("Domenica", "dom@hhu.de", 49),
+        new TeilnehmerIn("Majid", "maj@hhu.de", 90),
+        new TeilnehmerIn("Jonas", "jon@hhu.de", 33)
+    );
+    teilnehmer.stream()
+        .filter(TeilnehmerIn::hatBestanden)
+        .sorted((a, b) -> Integer.compare(b.punkte(), a.punkte()))
+        .forEach(this::printStudent);
+}
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Divergent Change Code Smell}
+  \textbf{Definition:} Eine Komponente muss aus verschiedenen, unzusammenhängenden Gründen geändert werden.
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Problematisches Beispiel - Active Record:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class Person {
+    private String firstName, lastName;
+
+    // Geschäftslogik - Änderungsgrund 1
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
+    // Datenbankzugriff - Änderungsgrund 2
+    public void saveToDatabase() {
+        // SQL INSERT statement...
+    }
+    // JSON-Serialisierung - Änderungsgrund 3
+    public String toJson() {
+        return "{\"firstName\":\"" + firstName + "\"}";
+    }
+}
+    \end{lstlisting}
+    \column{0.5\textwidth}
+    \textbf{Bessere Lösung - Trennung:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class Person {
+    private final String firstName, lastName;
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
+}
+public class PersonRepository {
+    public void save(Person person) {
+        // SQL INSERT statement...
+    }
+}
+public class PersonJsonSerializer {
+    public String toJson(Person person) {
+        return "{\"firstName\":\"" + person.getFirstName() + "\"}";
+    }
+}
+    \end{lstlisting}
+  \end{columns}
+  \textbf{Problem:} Die ursprüngliche Klasse verletzt das SRP, da sie sich bei Änderungen der Geschäftslogik, des Datenbankschemas UND des Serialisierungsformats ändern muss.
+\end{frame}
+
+\begin{frame}[fragile]{Shotgun Surgery Code Smell}
+  \textbf{Definition:} Eine logische Änderung erfordert viele kleine Änderungen an vielen Stellen im Code.
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Problematisches Beispiel - Logging:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class OrderService {
+    public void createOrder(Order order) {
+        System.out.println(LocalDateTime.now() +
+            " [INFO] Creating order: " + order.getId());
+        // ...
+    }
+}
+
+public class PaymentService {
+    public void processPayment(Payment p) {
+        System.out.println(LocalDateTime.now() +
+            " [INFO] Processing payment: " + p.getId());
+        // ...
+    }
+}
+// Problem: Log-Format ändern = ALLE Klassen ändern!
+    \end{lstlisting}
+    \column{0.5\textwidth}
+    \textbf{Verbesserte Lösung - Zentrale Abstraktion:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class Logger { // Zentrale Logging-Klasse
+    public static void info(String message) {
+        System.out.println(LocalDateTime.now() +
+            " [INFO] " + message);
+    }
+}
+public class OrderService {
+    public void createOrder(Order order) {
+        Logger.info("Creating order: " + order.getId());
+        // ...
+    }
+}
+public class PaymentService {
+    public void processPayment(Payment p) {
+        Logger.info("Processing payment: " + p.getId());
+        // ...
+    }
+}
+    \end{lstlisting}
+  \end{columns}
+  \textbf{Regel:} Wenn "Suchen \& Ersetzen" häufig für eine Änderung benötigt wird, ist das ein Hinweis auf Shotgun Surgery.
+\end{frame}
+
+\begin{frame}[fragile]{Feature Envy Code Smell}
+  \textbf{Definition:} Eine Methode ist mehr an einer anderen Klasse interessiert als an ihrer eigenen.
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Problematisches Beispiel:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class Monitor {
+    public void sendeAlarm(String msg) { /*...*/ }
+    public int getSystemTemperatur() { /*...*/ }
+    public boolean isCpuFanRunning() { /*...*/ }
+    public int getMemoryUsage() { /*...*/ }
+}
+
+public class RechnerKontrolle {
+    public void healthCheck(Monitor monitor) {
+        // Feature Envy - viele Zugriffe auf Monitor!
+        if (monitor.getSystemTemperatur() > 93) {
+            monitor.sendeAlarm("CPU überhitzt");
+        }
+        if (!monitor.isCpuFanRunning() &&
+            monitor.getSystemTemperatur() > 85) {
+            monitor.sendeAlarm("CPU-Lüfter ausgefallen");
+        }
+    }
+}
+    \end{lstlisting}
+    \column{0.5\textwidth}
+    \textbf{Verbesserte Lösung (Move Method):}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class Monitor {
+    public void sendeAlarm(String msg) { /*...*/ }
+    private int getSystemTemperatur() { /*...*/ }
+    private boolean isCpuFanRunning() { /*...*/ }
+    private int getMemoryUsage() { /*...*/ }
+    // Logik ist jetzt in der Klasse, zu der sie gehört
+    public void healthCheck() {
+        if (getSystemTemperatur() > 93) {
+            sendeAlarm("CPU überhitzt");
+        }
+        if (!isCpuFanRunning() &&
+            getSystemTemperatur() > 85) {
+            sendeAlarm("CPU-Lüfter ausgefallen");
+        }
+    }
+}
+public class RechnerKontrolle {
+    public void performHealthCheck(Monitor monitor) {
+        // "Tell, don't ask" - keine Feature Envy mehr!
+        monitor.healthCheck();
+    }
+}
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Message Chains Code Smell}
+  \textbf{Definition:} Lange Aufrufketten, die das Law of Demeter verletzen.
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Problematisches Beispiel:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class Rechnung {
+    public double berechneGesamtsumme() {
+        double summe = 0.0;
+        for (Position pos : positionen) {
+            // Message Chain:
+            summe += pos.getAnzahl() *
+                     pos.getProdukt().getPreis();
+        }
+        return summe;
+    }
+}
+// Noch schlimmer:
+public void printCustomerCity(Order order) {
+    String city = order.getCustomer()
+                      .getAddress()
+                      .getCity()
+                      .getName();
+    System.out.println(city);
+}
+    \end{lstlisting}
+    \column{0.5\textwidth}
+    \textbf{Verbesserte Lösung (Hide Delegate):}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class Position {
+    public double getGesamtpreis() {
+        return anzahl * produkt.getPreis();
+    }
+}
+
+public class Rechnung {
+    public double berechneGesamtsumme() {
+        return positionen.stream()
+            .mapToDouble(Position::getGesamtpreis)
+            .sum(); // Keine Chain mehr!
+    }
+}
+
+public class Order {
+    public String getCustomerCityName() {
+        return customer.getCityName(); // Delegieren
+    }
+}
+    \end{lstlisting}
+  \end{columns}
+  \textbf{Fluent Interfaces sind KEINE Message Chains! (Selbes Objekt in allen Aufrufen)}
+\end{frame}
+
+\begin{frame}{Wann Code Smells beheben?}
+  \textbf{Nicht jeder Code Smell muss automatisch behoben werden!}
+
+  \textbf{Entscheidungskriterien:}
+  \begin{description}
+    \item[\textbf{Wahrscheinlichkeit zukünftiger Änderungen}] Wie wahrscheinlich ist es, dass dieser Code-Teil geändert werden muss?
+    \item[\textbf{Trade-off-Analyse}]
+      \begin{itemize}
+        \item Entstehen durch die Behebung neue, schlimmere Probleme?
+        \item Wird der Code komplexer oder einfacher?
+      \end{itemize}
+    \item[\textbf{Kontext berücksichtigen}]
+      \begin{itemize}
+        \item Manche Smells gehören zu bestimmten Patterns (z.B. Strategy $\rightarrow$ Feature Envy).
+        \item Einmalige Scripts vs. langlebige Software.
+        \item Prototypen vs. Produktionscode.
+      \end{itemize}
+  \end{description}
+
+  \begin{exampleblock}{Pragmatismus}
+    \textbf{Ziel:} Wartbarkeit verbessern, nicht perfekte Software erschaffen.
+    Manchmal ist ``Good Enough'' wirklich gut genug!
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}{Achtung: Subjektives Cheatsheet!}
+  \begin{alertblock}{Wichtiger Hinweis zur folgenden Folien}
+    \begin{itemize}
+      \item Diese Zuordnungen sind \textbf{meine persönliche Interpretation}
+      \item Nicht als absolute Wahrheit verstehen!
+      \item Nur verwenden, wenn ihr \textbf{keine Ahnung habt} und besser als 50/50 raten wollt
+      \item Kann als \textbf{Denkanstoß} dienen, um in die richtige Richtung zu kommen
+      \item Maximal dann blind vertrauen, wenn das Ziel eine 4.0 ist
+    \end{itemize}
+  \end{alertblock}
+
+  \vspace{0.5cm}
+  \begin{center}
+    \textit{Diese Tabelle ist ein Notfallplan, kein Masterplan!}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Code Smells im Kleinen - Prinzipien-Verletzungen}
+  \footnotesize
+  \renewcommand{\arraystretch}{1.15}
+  \begin{tabular}{|l|l|l|}
+    \hline
+    \textbf{Code Smell} & \textbf{Verletztes Prinzip} & \textbf{Erklärung} \\
+    \hline
+    \hline
+    Mehrere Verantwortlichkeiten & Single Responsibility & Ursache für viele andere Smells \\
+    \hline
+    Long Method & Single Responsibility & Mehrere Verantwortlichkeiten vermischt \\
+    \hline
+    Long Parameter List & Single Responsibility & Viele Parameter = oft multiple Aufgaben \\
+    \hline
+    Mysterious Name & Allgemeine Lesbarkeit & Behindert Verständlichkeit \\
+    \hline
+    Duplicated Code & DRY Principle & Gleiche Logik $\rightarrow$ verteilte Änderungen \\
+    \hline
+    SLAP-Verletzung & Single Level of Abstraction & Verschiedene Detailebenen vermischt \\
+    \hline
+  \end{tabular}
+
+  \begin{exampleblock}{\small Prüfungsstrategie (basiert auf Altklausur-Analyse)}
+    \begin{enumerate}
+      \item \textbf{Primitive Obsession} - Domain Types statt primitiver Typen
+      \item \textbf{SRP-Verletzungen} - Methoden/Klassen mit mehreren Aufgaben
+      \item \textbf{SLAP-Verletzungen} - Gemischte Abstraktionsebenen
+      \item \textbf{DRY-Verletzungen} - Duplizierte Geschäftslogik
+    \end{enumerate}
+    \textbf{Selten direkt geprüft:} Long Method, Long Parameter List, Mysterious Name
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}{Code Smells im Großen - Prinzipien-Verletzungen}
+  \footnotesize
+  \renewcommand{\arraystretch}{1.15}
+  \begin{tabular}{|l|l|l|}
+    \hline
+    \textbf{Code Smell} & \textbf{Verletztes Prinzip} & \textbf{Erklärung} \\
+    \hline
+    \hline
+    Large Class & Single Responsibility & Zu viele verschiedene Verantwortlichkeiten \\
+    \hline
+    Primitive Obsession & Single Responsibility & Validierung gehört in Fachobjekt \\
+    \hline
+    Data Clumps & High Cohesion & Zusammengehörige Daten getrennt \\
+    \hline
+    Divergent Change & Single Responsibility & Klasse ändert sich aus verschiedenen Gründen \\
+    \hline
+    Shotgun Surgery & DRY Principle & Oft (nicht immer) mit Code-Duplikation \\
+    \hline
+    Feature Envy & Law of Demeter / Tell, don't ask & Klasse nutzt andere mehr als sich selbst \\
+    \hline
+    Message Chains & Law of Demeter & Lange Aufrufketten: \texttt{a.getB().getC()} \\
+    \hline
+    Refused Bequest & Liskov Substitution / ISP & Subtyp nicht als Supertyp verwendbar \\
+    \hline
+  \end{tabular}
+
+  \begin{exampleblock}{\small Prüfungsstrategie (basiert auf Altklausur-Analyse)}
+    \begin{enumerate}
+      \item \textbf{Shotgun Surgery} - Eine Änderung betrifft viele Klassen
+      \item \textbf{Primitive Obsession/Data Clumps} - Domain Types fehlen bzw. Parameter-Gruppen wie Adressdaten existieren
+      \item \textbf{Large Class/SRP-Verletzung} - Mehrere Verantwortlichkeiten
+    \end{enumerate}
+    \textbf{Selten direkt geprüft:} Feature Envy, Refused Bequest, Divergent Change
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}{Code Smells - Erkennungstabelle}
+  \footnotesize
+  \renewcommand{\arraystretch}{1.15}
+  \begin{tabular}{|l|l|}
+    \hline
+    \textbf{Code Smell} & \textbf{Erkennungsmerkmale} \\
+    \hline
+    \hline
+    Mehrere Verantwortlichkeiten & Klasse/Methode hat mehrere Aufgaben, "und" im Namen \\
+    \hline
+    Long Method & Methode $>15$ Zeilen, mehrere Abstraktionsebenen vermischt \\
+    \hline
+    Long Parameter List & $>3$ Parameter, oft Hinweis auf SRP-Verletzung \\
+    \hline
+    Mysterious Name & Unklare Namen wie \texttt{d}, \texttt{data}, \texttt{process}, \texttt{doStuff} \\
+    \hline
+    Duplicated Code & Copy-Paste Code, gleiche Geschäftslogik mehrfach implementiert \\
+    \hline
+    SLAP-Verletzung & Verschiedene Detailebenen gemischt (Low-Level + High-Level) \\
+    \hline
+    Verdächtige Kommentare & "Der folgende Code tut xy", Entschuldigungen im Code \\
+    \hline
+    \hline
+    Large Class & Mehrere verschiedene Aufgaben, Zweck schwer in einem Satz beschreibbar \\
+    \hline
+    Primitive Obsession & String statt IBAN, int statt Temperatur, fehlende Fachobjekte \\
+    \hline
+    Data Clumps & Parallele Arrays, Parameter-Gruppen die immer zusammen auftreten \\
+    \hline
+    Divergent Change & "Klasse ändert sich, wenn..." hat mehr als eine Antwort \\
+    \hline
+    Shotgun Surgery & Eine logische Änderung betrifft $>3$ Klassen/Stellen \\
+    \hline
+    Feature Envy & Methode nutzt andere Klasse intensiver als die eigene \\
+    \hline
+    Message Chains & \texttt{a.getB().getC().getD()} (NICHT Fluent APIs wie Stream) \\
+    \hline
+    Refused Bequest & \texttt{UnsupportedOperationException} in Override-Methoden \\
+    \hline
+  \end{tabular}
+\end{frame}
+
+\begin{frame}{Tag 3 - Zusammenfassung}
+  \footnotesize
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Struktur-Prinzipien:}
+    \begin{itemize}
+      \item \textbf{Single Responsibility} - Ein Grund zur Änderung
+      \item \textbf{Information Hiding} - Implementierung verstecken
+      \item \textbf{High Cohesion} - Zusammengehöriges zusammen
+      \item \textbf{Low Coupling} - Abhängigkeiten minimieren
+      \item \textbf{Law of Demeter} - Nur mit Freunden sprechen
+    \end{itemize}
+
+    $\rightarrow$ Trade-offs bei Architektur-Entscheidungen bewerten
+    \vspace{0.5cm}
+
+    \textbf{Vererbung \& Polymorphismus:}
+    \begin{itemize}
+      \item Interface-Vererbung > Klassen-Vererbung
+      \item Komposition > Vererbung
+      \item Polymorphismus zur Entkopplung
+      \item Refused Bequest vermeiden
+    \end{itemize}
+
+    \column{0.5\textwidth}
+    \textbf{SOLID-Prinzipien:}
+    \begin{itemize}
+      \item \textbf{Single Responsibility Principle} - \textit{Nochmal}
+      \item \textbf{Open/Closed} - Erweiterbar, nicht änderbar
+      \item \textbf{Liskov Substitution} - Subtypen austauschbar
+      \item \textbf{Interface Segregation} - Kleine, fokussierte Interfaces
+      \item \textbf{Dependency Inversion} - Auf Abstraktionen setzen
+    \end{itemize}
+
+    $\rightarrow$ Die jeweiligen Refactoring Strategien wissen
+    \vspace{0.5cm}
+
+    \textbf{Code Smells erkennen:}
+    \begin{itemize}
+      \item Large Class, Primitive Obsession
+      \item Data Clumps, Divergent Change
+      \item Shotgun Surgery, Feature Envy
+      \item Message Chains
+    \end{itemize}
+  \end{columns}
+\end{frame}

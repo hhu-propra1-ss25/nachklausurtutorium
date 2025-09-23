@@ -1,0 +1,1183 @@
+\section{Tag 2 - Testing \& Codequalität}
+
+% ===========================
+% Testing Basics
+% ===========================
+
+\subsection{Testing Basics}
+
+\begin{frame}{Warum Unit Testing?}
+  \textbf{Software ohne Tests:}
+  \begin{itemize}
+    \item Angst vor Änderungen - "never touch a running system"
+    \item Manuelle Tests sind langsam und fehleranfällig
+    \item Bugs werden erst in Produktion entdeckt
+    \item Regression bei jeder Änderung möglich
+  \end{itemize}
+
+  \textbf{Vorteile von automatisierten Tests:}
+  \begin{itemize}
+    \item \textbf{Sicherheitsnetz} bei Refactoring
+    \item \textbf{Dokumentation} des gewünschten Verhaltens
+    \item \textbf{Frühzeitige} Fehlererkennung
+    \item \textbf{Vertrauen} in Code-Änderungen
+    \item \textbf{Besseres Design} durch Testbarkeit
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{AAA-Schema - Test-Struktur}
+  \textbf{Arrange-Act-Assert - Standardstruktur für Tests:}
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \begin{enumerate}
+      \item \textbf{Arrange}: Test-Setup
+        \begin{itemize}
+          \item Objekte erzeugen
+          \item Zustand vorbereiten
+          \item Test-Daten erstellen
+        \end{itemize}
+      \item \textbf{Act}: Code ausführen
+        \begin{itemize}
+          \item Die zu testende Methode aufrufen
+          \item Meist nur eine Zeile
+        \end{itemize}
+      \item \textbf{Assert}: Ergebnis prüfen
+        \begin{itemize}
+          \item Erwartete mit tatsächlichen Werten vergleichen
+          \item Mehrere Assertions möglich
+        \end{itemize}
+    \end{enumerate}
+
+    \column{0.5\textwidth}
+    \begin{exampleblock}{Beispiel}
+      \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+@Test
+@DisplayName("Addition zweier positiver Zahlen")
+void should_add_two_positive_numbers() {
+    // Arrange
+    Calculator calc = new Calculator();
+    int a = 5, b = 3;
+
+    // Act
+    int result = calc.add(a, b);
+
+    // Assert
+    assertThat(result).isEqualTo(8);
+}
+      \end{lstlisting}
+    \end{exampleblock}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{FIRST-Prinzipien für gute Tests}
+  \textbf{Eigenschaften guter Unit-Tests:}
+
+  \begin{description}
+    \item[\textbf{F}ast] Tests sollen schnell laufen
+      \begin{itemize}
+        \item Keine Datenbankzugriffe, Netzwerk-Calls
+        \item Hunderte Tests in Sekunden
+      \end{itemize}
+
+    \item[\textbf{I}ndependent] Tests sollen unabhängig voneinander sein
+      \begin{itemize}
+        \item Reihenfolge egal
+        \item Kein geteilter Zustand zwischen Tests
+      \end{itemize}
+
+    \item[\textbf{R}epeatable] Tests sollen wiederholbar sein
+      \begin{itemize}
+        \item Gleiche Eingabe $\rightarrow$ gleiches Ergebnis
+        \item Keine Abhängigkeit von aktueller Zeit, Zufallswerten
+      \end{itemize}
+
+    \item[\textbf{S}elf-evaluating] Tests zeigen selbst an, ob sie bestanden haben
+      \begin{itemize}
+        \item Rot/Grün statt manuelle Interpretation
+      \end{itemize}
+
+    \item[\textbf{T}imely] Tests werden zeitnah geschrieben
+      \begin{itemize}
+        \item Idealerweise vor dem Code (TDD)
+      \end{itemize}
+  \end{description}
+\end{frame}
+
+\begin{frame}[fragile]{Test-Setup mit JUnit 5 und AssertJ}
+  \textbf{Dependencies in build.gradle:}
+
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily, language={}]
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.12.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.12.2'
+    testImplementation 'org.assertj:assertj-core:3.27.3'
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+  \end{lstlisting}
+
+  \textbf{Imports in Test-Klassen:}
+  \begin{lstlisting}[style=java, basicstyle=\footnotesize\ttfamily]
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
+import static org.assertj.core.api.Assertions.*;
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Rückgaben testen - Pure Functions}
+  \textbf{Pure Function}: Ergebnis nur von Eingabeparametern abhängig
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Eigenschaften:}
+    \begin{itemize}
+      \item Keine Seiteneffekte
+      \item Deterministisch
+      \item Einfach zu testen
+      \item Wiederverwendbar
+    \end{itemize}
+
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Pure Function
+public static double calculateCircleArea(double radius) {
+    return Math.PI * radius * radius;
+}
+
+// Nicht pure (Seiteneffekt)
+public void logAndCalculate(double radius) {
+    System.out.println("Calculating...");  // Seiteneffekt!
+    return Math.PI * radius * radius;
+}
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Test für Pure Function:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+@Test
+@DisplayName("Kreisfläche für Radius 5")
+void should_calculate_circle_area_for_radius_5() {
+    // Act
+    double area = MathUtils.calculateCircleArea(5.0);
+
+    // Assert
+    assertThat(area).isCloseTo(78.54, offset(0.01));
+}
+
+@Test
+@DisplayName("Kreisfläche für Radius 0")
+void should_return_zero_area_for_zero_radius() {
+    // Act
+    double area = MathUtils.calculateCircleArea(0.0);
+
+    // Assert
+    assertThat(area).isEqualTo(0.0);
+}
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Testen mit Zustand}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Counter-Klasse:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class Counter {
+    private int count = 0;
+
+    public void increment() {
+        count++;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public void reset() {
+        count = 0;
+    }
+}
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Test-Klasse:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class CounterTest {
+    private Counter counter = new Counter();
+    @Test
+    @DisplayName("Counter startet bei 0")
+    void should_start_at_zero() {
+        assertThat(counter.getCount()).isEqualTo(0);
+    }
+    @Test
+    @DisplayName("Reset setzt auf 0 zurück")
+    void should_reset_to_zero() {
+        // Arrange
+        counter.increment();
+        // Act
+        counter.reset();
+        // Assert
+        assertThat(counter.getCount()).isEqualTo(0);
+    }
+}
+    \end{lstlisting}
+  \end{columns}
+
+  \begin{alertblock}{JUnit erzeugt für jeden Test eine neue Instanz!}
+    Tests sind automatisch isoliert - kein geteilter Zustand.
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]{AssertJ - Fluent Assertions}
+  \textbf{Lesbare Assertions im natürlichen Sprachfluss:}
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Zahlen:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+assertThat(42).isEqualTo(42);
+assertThat(3.14159).isCloseTo(3.14, offset(0.01));
+assertThat(100.0).isCloseTo(99.0, withPercentage(2));
+assertThat(5).isGreaterThan(3);
+assertThat(10).isBetween(5, 15);
+assertThat(-5).isNegative();
+assertThat(0).isZero();
+    \end{lstlisting}
+
+    \textbf{Strings:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+assertThat("Hello World").isEqualTo("Hello World");
+assertThat("Java").contains("av");
+assertThat("").isEmpty();
+assertThat("NotEmpty").isNotEmpty();
+assertThat("Hello").startsWith("Hel");
+assertThat("World").endsWith("rld");
+assertThat("HELLO").isEqualToIgnoringCase("hello");
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Collections:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+List<String> list = List.of("a", "b", "c");
+
+assertThat(list).hasSize(3);
+assertThat(list).contains("b");
+assertThat(list).doesNotContain("d");
+assertThat(list).containsExactly("a", "b", "c");
+assertThat(list).containsExactlyInAnyOrder("c", "a", "b");
+assertThat(list).startsWith("a");
+assertThat(list).isNotEmpty();
+    \end{lstlisting}
+
+    \textbf{Booleans und null:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+assertThat(true).isTrue();
+assertThat(false).isFalse();
+assertThat(object).isNull();
+assertThat(object).isNotNull();
+assertThat(object).isInstanceOf(String.class);
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Testen auf Exceptions}
+  \textbf{Exception-Tests mit assertThrows:}
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Einfacher Exception-Test:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+@Test
+@DisplayName("Division durch Null wirft ArithmeticException")
+void should_throw_exception_for_division_by_zero() {
+    // Arrange
+    Calculator calc = new Calculator();
+
+    // Act & Assert
+    ArithmeticException exception = assertThrows(
+        ArithmeticException.class,
+        () -> calc.divide(10, 0)
+    );
+
+    // Optional: Exception-Details prüfen
+    assertThat(exception.getMessage())
+        .contains("by zero");
+}
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Warum Lambda-Ausdruck?}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// FALSCH - Exception fliegt vor assertThrows
+@Test
+void wrong_exception_test() {
+    Calculator calc = new Calculator();
+    int result = calc.divide(10, 0);  // Exception hier!
+
+    assertThrows(ArithmeticException.class,
+        () -> { /* code never reached */ });
+}
+
+// RICHTIG - Code wird erst in Lambda ausgeführt
+@Test
+void correct_exception_test() {
+    Calculator calc = new Calculator();
+
+    assertThrows(ArithmeticException.class,
+        () -> calc.divide(10, 0));  // Exception hier gefangen
+}
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+% ===========================
+% TDD-Zyklus
+% ===========================
+
+\subsection{TDD-Zyklus}
+
+\begin{frame}{Test-Driven Development (TDD)}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Traditioneller Ansatz:}
+    \begin{enumerate}
+      \item Code schreiben
+      \item Tests schreiben (wenn überhaupt)
+      \item Bugs finden und fixen
+    \end{enumerate}
+
+    \column{0.5\textwidth}
+    \textbf{TDD-Ansatz:}
+    \begin{enumerate}
+      \item Test schreiben (der fehlschlägt)
+      \item Minimalen Code schreiben (Test wird grün)
+      \item Code refactorieren (bei grünen Tests)
+    \end{enumerate}
+  \end{columns}
+
+  \begin{exampleblock}{TDD-Vorteile}
+    \begin{itemize}
+      \item Code ist garantiert testbar
+      \item Tests als erste "Clients" des Codes
+      \item Vollständige Testabdeckung
+      \item Tests dokumentieren Anforderungen
+      \item Besseres API-Design
+    \end{itemize}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}{Red-Green-Refactor Zyklus}
+  \begin{description}
+    \item[\textcolor{red}{\textbf{RED}}] Fehlschlagender Test
+      \begin{itemize}
+        \item Test schreiben BEVOR Code existiert
+        \item Test MUSS fehlschlagen (sonst testet er nichts)
+        \item Prüfen: Schlägt Test aus richtigem Grund fehl?
+      \end{itemize}
+
+    \item[\textcolor{green}{\textbf{GREEN}}] Minimaler Code
+      \begin{itemize}
+        \item Gerade genug Code bis Test grün wird
+        \item Jeder Trick erlaubt: hardcoded returns, copy-paste
+        \item Zeitrahmen: 30 Sekunden bis 2 Minuten
+      \end{itemize}
+
+    \item[\textcolor{blue}{\textbf{REFACTOR}}] Code verbessern
+      \begin{itemize}
+        \item NUR bei grünen Tests!
+        \item Externe Schnittstelle bleibt unverändert
+        \item Interne Struktur/Lesbarkeit verbessern
+      \end{itemize}
+  \end{description}
+\end{frame}
+
+\begin{frame}[fragile]{TDD Beispiel: Roman Numbers (1/4)}
+  \textbf{Anforderung}: Arabische Zahlen in römische Zahlen umwandeln
+
+  \textbf{1. RED - Erster fehlschlagender Test:}
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+@Test
+@DisplayName("1 wird zu I")
+void should_translate_1_to_I() {
+    // Arrange & Act
+    String result = RomanNumbers.translate(1);
+    // Assert
+    assertThat(result).isEqualTo("I");
+}
+  \end{lstlisting}
+
+  \textbf{Fehler}: \texttt{RomanNumbers} Klasse existiert nicht $\rightarrow$ Kompiliert nicht
+
+  \textbf{2. GREEN - Minimaler Code:}
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class RomanNumbers {
+    public static String translate(int arabic) {
+        return "I";  // Hard-coded für ersten Test!
+    }
+}
+  \end{lstlisting}
+
+  Test wird grün $\checkmark$
+\end{frame}
+
+\begin{frame}[fragile]{TDD Beispiel: Roman Numbers (2/4)}
+  \textbf{3. REFACTOR - Noch nichts zu refactorieren}
+
+  \textbf{4. RED - Zweiter Test:}
+  \begin{lstlisting}[style=java, basicstyle=\footnotesize\ttfamily]
+@Test
+@DisplayName("2 wird zu II")
+void should_translate_2_to_II() {
+    String result = RomanNumbers.translate(2);
+    assertThat(result).isEqualTo("II");
+}
+  \end{lstlisting}
+
+  Test schlägt fehl: erwartet "II", bekommt "I"
+
+  \textbf{5. GREEN - Code erweitern:}
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public static String translate(int arabic) {
+    if (arabic == 2) return "II";
+    if (arabic == 1) return "I";
+    return "";
+}
+  \end{lstlisting}
+
+  Beide Tests grün $\checkmark$
+\end{frame}
+
+\begin{frame}[fragile]{TDD Beispiel: Roman Numbers (3/4)}
+  \textbf{6. RED - Dritter Test:}
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+@Test
+@DisplayName("3 wird zu III")
+void should_translate_3_to_III() {
+    String result = RomanNumbers.translate(3);
+    assertThat(result).isEqualTo("III");
+}
+  \end{lstlisting}
+
+  \textbf{7. GREEN - Pattern wird sichtbar:}
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public static String translate(int arabic) {
+    if (arabic == 3) return "III";
+    if (arabic == 2) return "II";
+    if (arabic == 1) return "I";
+    return "";
+}
+  \end{lstlisting}
+
+  \textbf{8. REFACTOR - Code vereinfachen:}
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public static String translate(int arabic) {
+    return "I".repeat(arabic);  // Funktioniert für 1, 2, 3
+}
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{TDD Beispiel: Roman Numbers (4/4)}
+  \textbf{9. RED - Nächster Test (Regel für 4):}
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+@Test
+@DisplayName("4 wird zu IV")
+void should_translate_4_to_IV() {
+    String result = RomanNumbers.translate(4);
+    assertThat(result).isEqualTo("IV");
+}
+  \end{lstlisting}
+
+  Schlägt fehl: erwartet "IV", bekommt "IIII"
+
+  \textbf{10. GREEN - Spezialfall behandeln:}
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public static String translate(int arabic) {
+    if (arabic == 4) return "IV";
+    return "I".repeat(arabic);
+}
+  \end{lstlisting}
+
+  \textbf{TDD Fortsetzung:} Weitere Tests für 5 ("V"), 9 ("IX"), 10 ("X"), etc.
+
+  \begin{alertblock}{TDD-Regel}
+    \textbf{Niemals} mehr Code schreiben als nötig, um den aktuellen Test zum Laufen zu bringen!
+  \end{alertblock}
+\end{frame}
+
+% ===========================
+% Qualität von Software
+% ===========================
+
+\subsection{Qualität von Software}
+
+\begin{frame}{ISO 25010 - Software Quality Model}
+  \begin{columns}[T]
+    \column{0.33\textwidth}
+    \begin{itemize}
+      \item \textbf{Funktionale Angemessenheit}
+        \begin{itemize}
+          \item Vollständigkeit
+          \item Korrektheit
+          \item Angemessenheit
+        \end{itemize}
+      \item \textbf{Performance/Efficiency}
+        \begin{itemize}
+          \item Zeit-Verhalten
+          \item Ressourcen-Verbrauch
+        \end{itemize}
+      \item \textbf{Kompatibilität}
+        \begin{itemize}
+          \item Interoperabilität
+          \item Koexistenz
+        \end{itemize}
+    \end{itemize}
+
+    \column{0.33\textwidth}
+    \begin{itemize}
+      \item \textbf{Usability}
+        \begin{itemize}
+          \item Bedienbarkeit
+          \item Lernbarkeit
+          \item Fehlertoleranz
+        \end{itemize}
+      \item \textbf{Reliability}
+        \begin{itemize}
+          \item Reife
+          \item Verfügbarkeit
+          \item Fehlertoleranz
+          \item Wiederherstellbarkeit
+        \end{itemize}
+      \item \textbf{Security}
+        \begin{itemize}
+          \item Vertraulichkeit
+          \item Integrität
+          \item Authentizität
+        \end{itemize}
+    \end{itemize}
+
+    \column{0.33\textwidth}
+    \begin{itemize}
+      \item \textbf{Maintainability} $\leftarrow$ \textcolor{red}{\textbf{Fokus}}
+        \begin{itemize}
+          \item Modularität
+          \item Analysierbarkeit
+          \item Änderbarkeit
+          \item Testbarkeit
+        \end{itemize}
+      \item \textbf{Portability}
+        \begin{itemize}
+          \item Anpassbarkeit
+          \item Installierbarkeit
+          \item Austauschbarkeit
+        \end{itemize}
+    \end{itemize}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Trade-offs zwischen Qualitätszielen 1}
+  \begin{exampleblock}{Beispiel: Sicherheit vs. Usability}
+    \textbf{Sicherheit erhöhen:}
+    \begin{itemize}
+      \item 2-Faktor-Authentifizierung
+      \item Komplexe Passwort-Regeln
+      \item Häufige Re-Authentifizierung
+      \item Detaillierte Eingabevalidierung
+    \end{itemize}
+
+    \textbf{Usability sinkt:}
+    \begin{itemize}
+      \item Längerer Login-Prozess
+      \item Passwörter schwer zu merken
+      \item Unterbrechungen im Workflow
+      \item Mehr Schritte für Benutzer
+    \end{itemize}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}{Trade-offs zwischen Qualitätszielen 2}
+  \textbf{Nicht alle Qualitätsziele können gleichzeitig maximiert werden!}
+
+  \textbf{Weitere Trade-offs:}
+  \begin{itemize}
+    \item \textbf{Performance vs. Maintainability}: Optimierter Code oft schwer lesbar
+    \item \textbf{Funktionalität vs. Usability}: Mehr Features $\rightarrow$ komplexere UI
+    \item \textbf{Kosten vs. Qualität}: Höhere Qualität braucht mehr Zeit/Ressourcen
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Wartbarkeit - Warum so wichtig?}
+  \begin{exampleblock}{Doug Bell's Erkenntnis}
+    \textbf{Ca. 70\% der Software-Kosten entstehen NACH der initialen Entwicklung}
+  \end{exampleblock}
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Wartungsaufgaben:}
+    \begin{itemize}
+      \item Neue Funktionalitäten hinzufügen
+      \item Bugs beheben
+      \item Performance optimieren
+      \item Sicherheitslücken schließen
+      \item An veränderte Anforderungen anpassen
+      \item Auf neue Plattformen portieren
+    \end{itemize}
+
+    \column{0.5\textwidth}
+    \textbf{Wann ist Wartbarkeit weniger wichtig?}
+    \begin{itemize}
+      \item Einmalige Skripte (wirklich einmalig!)
+      \item Prototypen (werden nie produktiv)
+      \item Wegwerf-Code
+    \end{itemize}
+  \end{columns}
+
+  \begin{alertblock}{Achtung vor "temporären" Lösungen!}
+    "Nothing is as permanent as a temporary solution"
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}{Eigenschaften wartbarer Software}
+  \begin{description}
+    \item[\textbf{Modularisierung}]
+      \begin{itemize}
+        \item Zerlegung in überschaubare Komponenten
+        \item Änderungen bleiben lokal begrenzt
+        \item Verstehen nur relevanter Teile nötig
+      \end{itemize}
+
+    \item[\textbf{Analysierbarkeit}]
+      \begin{itemize}
+        \item Code ist verständlich und nachvollziehbar
+        \item Sprechende Namen und klare Struktur
+        \item Gute Dokumentation durch Tests
+      \end{itemize}
+
+    \item[\textbf{Änderbarkeit}]
+      \begin{itemize}
+        \item Code kann ohne große Umstrukturierung angepasst werden
+        \item Lose Kopplung zwischen Komponenten
+        \item Klare Verantwortlichkeiten
+      \end{itemize}
+
+    \item[\textbf{Testbarkeit}]
+      \begin{itemize}
+        \item Automatisierte Tests als Sicherheitsnetz
+        \item Tests zeigen sofort, wenn etwas kaputtgeht
+        \item Modularisierung erleichtert isoliertes Testen
+      \end{itemize}
+  \end{description}
+\end{frame}
+
+\begin{frame}{Wartbarkeit als Investition}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Kurzfristig (während Entwicklung):}
+    \begin{itemize}
+      \item[$-$] Wartbarer Code kostet mehr Zeit
+      \item[$-$] Mehr Nachdenken über Design
+      \item[$-$] Zusätzliche Tests schreiben
+      \item[$-$] Refactoring-Aufwand
+      \item[$+$] Weniger Debugging
+      \item[$+$] Einfacheres Erweitern
+    \end{itemize}
+
+    \column{0.5\textwidth}
+    \textbf{Langfristig (Wartungsphase):}
+    \begin{itemize}
+      \item[$+$] Massive Kosteneinsparung
+      \item[$+$] Schnellere Feature-Entwicklung
+      \item[$+$] Weniger Bugs
+      \item[$+$] Einfachere Einarbeitung neuer Entwickler
+      \item[$+$] Weniger Stress bei Änderungen
+    \end{itemize}
+  \end{columns}
+
+  \begin{exampleblock}{Balance finden}
+    \begin{itemize}
+      \item Nicht über-engineeren
+      \item Ausreichend strukturieren für erwartete Änderungen
+      \item Pragmatisch bleiben
+    \end{itemize}
+  \end{exampleblock}
+\end{frame}
+
+% ===========================
+% Code Smells im Kleinen
+% ===========================
+
+\subsection{Code Smells im Kleinen}
+
+\begin{frame}{Was sind Code Smells?}
+  \textbf{Code Smells sind:}
+  \begin{itemize}
+    \item Hinweise auf Wartbarkeitsprobleme
+    \item Nicht automatisch Fehler (Code funktioniert)
+    \item Indikatoren für schlechtes Design
+    \item Kandidaten für Refactoring
+  \end{itemize}
+
+  \textbf{Wichtig:}
+  \begin{itemize}
+    \item Nicht jeder Smell muss behoben werden
+    \item Kontext und Aufwand beachten
+    \item Pragmatische Entscheidungen treffen
+  \end{itemize}
+
+  \begin{exampleblock}{Heute: Code Smells "im Kleinen"}
+    \begin{itemize}
+      \item Auf Methoden- und Klassen-Ebene
+      \item Direkt sichtbare Probleme
+      \item Einfach zu behebende Smells
+    \end{itemize}
+  \end{exampleblock}
+\end{frame}
+
+
+\begin{frame}[fragile]{Mehrere Verantwortlichkeiten 1}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Schlecht - Mars-Roboter Beispiel:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public void controlRobot() {
+    // Sensordaten lesen
+    int distance = sensor.readDistance();
+    boolean obstacle = distance < 10;
+
+    // Route planen
+    if (obstacle) {
+        turnLeft();
+        moveForward(5);
+        turnRight();
+    } else {
+        moveForward(10);
+    }
+
+    // Energieverbrauch prüfen
+    if (battery.getLevel() < 20) {
+        sendLowBatteryAlert();
+        activatePowerSaving();
+    }
+
+    // Daten komprimieren und senden
+    String data = collectSensorData();
+    String compressed = compress(data);
+    radio.sendToEarth(compressed);
+}
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Besser - Aufgeteilt:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public void controlRobot() {
+    Environment env = sensorsystem.scan();
+    Route route = navigator.planRoute(env);
+    movement.execute(route);
+    powerManager.checkAndOptimize();
+    dataTransmitter.sendToEarth();
+}
+
+// Separate Klassen/Methoden:
+class SensorSystem {
+    public Environment scan() { /* ... */ }
+}
+
+class Navigator {
+    public Route planRoute(Environment env) { /* ... */ }
+}
+
+class MovementController {
+    public void execute(Route route) { /* ... */ }
+}
+
+class PowerManager {
+    public void checkAndOptimize() { /* ... */ }
+}
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Mehrere Verantwortlichkeiten 2}
+  \textbf{Vorteile der Aufteilung:}
+  \begin{itemize}
+    \item Jede Klasse hat eine klare Verantwortlichkeit
+    \item Einfacher zu testen (einzelne Komponenten)
+    \item Einfacher zu verstehen und zu ändern
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Mysterious Name / Namenskonventionen}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Schlechte Namen:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Was macht diese Methode?
+public static int fibo(int n) {
+    int y = 0, z = 0;
+    while(y < n) {
+        z += 1 + 2*y++;
+    }
+    return z;
+}
+
+// Lügender Name!
+private Set<String> kundenListe;
+
+// Uninformativ
+int d;
+d += 30;
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Gute Namen:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Klarerer Name enthüllt: es ist n^2!
+public static int calculateSquareOfNumber(int n) {
+    int result = 0;
+    int iterator = 0;
+    while(iterator < n) {
+        result += 1 + 2 * iterator;
+        iterator++;
+    }
+    return result;
+}
+
+// Wahrheitsgemäss
+private Set<String> kunden;
+
+// Aussagekräftig
+int daysSinceLastUpdate;
+daysSinceLastUpdate += DAYS_IN_APRIL;
+    \end{lstlisting}
+  \end{columns}
+
+  \begin{itemize}
+    \item Namen beschreiben Zweck/Aufgabe
+    \item Namen dürfen NIEMALS lügen
+    \item Spezifisch sein (\texttt{customers} statt \texttt{data})
+    \item Kontextabhängige Länge (kurze Namen bei kleinem Scope OK)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Java Namenskonventionen}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{camelCase - Methoden und Variablen:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Methoden: Verben
+public void calculateInterest()
+public String getUserName()
+public boolean isValid()
+public void setCustomerAddress()
+
+// Variablen: Nomen
+String firstName;
+int customerAge;
+List<Order> pendingOrders;
+boolean isReadyForProcessing;
+    \end{lstlisting}
+
+    \textbf{PascalCase - Klassen und Interfaces:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Klassen: Nomen
+public class CustomerManager
+public class OrderProcessor
+public class PaymentGateway
+
+// Interfaces: oft Adjektive mit -able
+public interface Serializable
+public interface Comparable<T>
+public interface Runnable
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{SCREAMING\_SNAKE\_CASE - Konstanten:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public static final int MAX_RETRY_COUNT = 3;
+public static final String DEFAULT_ENCODING = "UTF-8";
+public static final double PI = 3.14159;
+
+// Enums
+public enum Status {
+    PENDING,
+    IN_PROGRESS,
+    COMPLETED,
+    CANCELLED
+}
+    \end{lstlisting}
+
+    \textbf{Boolean-Naming:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Präfixe: is, has, can, should
+boolean isValid;
+boolean hasPermission;
+boolean canEdit;
+boolean shouldRetry;
+
+// Methoden genauso
+public boolean isEmpty()
+public boolean hasNext()
+public boolean canAccess()
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Kommentare als Code Smell}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Schlecht - Beschreibt WAS:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Prüfen ob erste Argument gültige Mailadresse ist
+if (Pattern.matches("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$", args[0])) {
+    // ...
+}
+
+// i um 1 erhöhen
+i++;
+
+// Schleife über alle Kunden
+for (Customer customer : customers) {
+    // ...
+}
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Besser - Code selbsterklärend machen:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Statt Kommentar: Methode mit sprechendem Namen
+if (isValidEmailAddress(args[0])) {
+    // ...
+}
+
+private static boolean isValidEmailAddress(String email) {
+    // Vereinfachter RegEx aus HTML5 Standard,
+    // da RFC-konformer RegEx zu komplex für unseren Use-Case
+    return Pattern.matches("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@...", email);
+}
+
+// Keine Kommentare nötig:
+customerIndex++;
+
+for (Customer customer : customers) {
+    processCustomerOrder(customer);
+}
+    \end{lstlisting}
+  \end{columns}
+
+  \begin{itemize}
+    \item Erklären WARUM (nicht was)
+    \item Rechtliche Hinweise, Copyrights
+    \item Warnung vor Konsequenzen
+    \item TODO-Kommentare (temporär)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Long Method 1}
+  \textbf{Problem}: Methoden mit zu vielen Zeilen Code
+
+  \textbf{Probleme langer Methoden:}
+  \begin{itemize}
+    \item Schwer zu verstehen ("Wo war ich gerade?")
+    \item Meist mehrere Verantwortlichkeiten vermischt
+    \item Schwer zu testen (viele Code-Pfade)
+    \item Schwer wiederzuverwenden
+    \item Schwer zu debuggen
+  \end{itemize}
+
+  \textbf{Faustregel}: Methode sollte auf eine Bildschirmseite passen (ca. 20-30 Zeilen)
+\end{frame}
+
+\begin{frame}[fragile]{Long Method 2}
+  \begin{exampleblock}{Lösung: Extract Method}
+    \begin{lstlisting}[style=java, basicstyle=\footnotesize\ttfamily]
+// Vorher: Eine lange Methode mit 50+ Zeilen
+public void processOrder(Order order) {
+    // 10 Zeilen Validierung
+    // 15 Zeilen Preisberechnung
+    // 10 Zeilen Rabatt-Logik
+    // 15 Zeilen E-Mail versenden
+}
+
+// Nachher: Aufgeteilt in kleinere Methoden
+public void processOrder(Order order) {
+    validateOrder(order);
+    double total = calculateTotal(order);
+    sendConfirmation(order, total);
+}
+    \end{lstlisting}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{SLAP - Single Level of Abstraction Principle}
+  \textbf{Alle Anweisungen in einer Methode sollten den gleichen Detailgrad haben}
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Verletzt SLAP (Detail + Abstraktion):}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+private void printReport() {
+    // Hohe Abstraktion
+    printHeader();
+
+    // Niedrige Abstraktion (Details)
+    int maxLength = 0;
+    for (Product product : products) {
+        int length = product.getName().length();
+        if (length > maxLength) {
+            maxLength = length + 1;
+        }
+    }
+
+    // Wieder hohe Abstraktion
+    printProductTable(maxLength);
+    printFooter();
+}
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Erfüllt SLAP (gleiche Abstraktionsebene):}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+private void printReport() {
+    printHeader();
+    int maxLength = calculateMaxProductNameLength();
+    printProductTable(maxLength);
+    printFooter();
+}
+
+private int calculateMaxProductNameLength() {
+    int maxLength = 0;
+    for (Product product : products) {
+        int length = product.getName().length();
+        if (length > maxLength) {
+            maxLength = length + 1;
+        }
+    }
+    return maxLength;
+}
+    \end{lstlisting}
+  \end{columns}
+
+  \begin{itemize}
+    \item Jede Methode ist auf einer "Zoom-Stufe"
+    \item Bei Bedarf in Details "hineinzoomen"
+    \item Übersicht bleibt erhalten
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Long Parameter List}
+  \textbf{Problem}: Methoden mit zu vielen Parametern
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Problematisch:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Was bedeuten die Parameter?
+public double calculateDistance(
+    double x1, double y1, double z1,
+    double x2, double y2, double z2) {
+    return Math.sqrt(
+        Math.pow(x2-x1,2) + Math.pow(y2-y1,2) + Math.pow(z2-z1,2)
+    );
+}
+
+// Aufruf - fehleranfällig!
+double dist = calculateDistance(
+    1.0, 2.0, 3.0,    // Start
+    4.0, 5.0, 6.0     // End - oder umgekehrt?
+);
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Besser - Parameter-Objekte:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public record Point3D(double x, double y, double z) {}
+
+public double calculateDistance(Point3D start, Point3D end) {
+    return Math.sqrt(
+        Math.pow(end.x() - start.x(), 2) +
+        Math.pow(end.y() - start.y(), 2) +
+        Math.pow(end.z() - start.z(), 2)
+    );
+}
+
+// Aufruf - selbsterklärend!
+Point3D start = new Point3D(1.0, 2.0, 3.0);
+Point3D end = new Point3D(4.0, 5.0, 6.0);
+double distance = calculateDistance(start, end);
+    \end{lstlisting}
+  \end{columns}
+
+  \textbf{Boolean-Parameter vermeiden:}
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Schlecht: Was bedeutet true/false?
+public Package wrap(Product product, boolean isGift) { ... }
+
+// Besser: Separate Methoden
+public Package wrapAsGift(Product product) { ... }
+public Package wrapNormally(Product product) { ... }
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Duplicated Code / DRY-Prinzip 1}
+  \textbf{Don't Repeat Yourself (DRY)}
+
+  \begin{alertblock}{Nicht der identische Code ist das Problem, sondern doppeltes WISSEN!}
+  \end{alertblock}
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Problematisch - Gleiche Geschäftslogik:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Rabatt-Berechnung in OrderService
+public double calculateOrderTotal(Order order) {
+    double total = order.getSubtotal();
+    if (order.getCustomer().isPremium()) {
+        total *= 0.9;  // 10% Rabatt
+    }
+    return total;
+}
+
+// Gleiche Logik in InvoiceService
+public double calculateInvoiceTotal(Invoice invoice) {
+    double total = invoice.getAmount();
+    if (invoice.getCustomer().isPremium()) {
+        total *= 0.9;  // 10% Rabatt - DUPLIZIERT!
+    }
+    return total;
+}
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{OK - Verschiedenes Wissen (trotz gleichem Code):}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Alter validieren
+public boolean validateAge(int age) {
+    return age >= 0 && age <= 150;
+}
+
+// Menge validieren
+public boolean validateQuantity(int quantity) {
+    return quantity >= 0 && quantity <= 150;
+}
+
+// Gleicher Code, aber verschiedene Geschäftsregeln!
+// Alter-Obergrenze könnte sich unabhängig von
+// Mengen-Obergrenze ändern
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Duplicated Code / DRY-Prinzip 2}
+  \textbf{Don't Repeat Yourself (DRY)}
+
+  \textbf{Vorteile:}
+  \begin{itemize}
+    \item Änderungen nur an einer Stelle
+    \item Konsistenz automatisch gewährleistet
+    \item Weniger Vergesslichkeit bei Änderungen
+  \end{itemize}
+\end{frame}

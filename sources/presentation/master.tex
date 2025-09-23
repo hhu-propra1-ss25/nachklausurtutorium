@@ -1,0 +1,260 @@
+\documentclass[10pt, aspectratio=169, t, hyperref={pdfpagelabels=true}]{beamer}
+
+\mode<presentation> {
+    \setbeamercovered{invisible}
+}
+
+% Embedded HHUD Color Theme
+\mode<presentation>
+
+% HHU Corporate Design Colors
+\definecolor{hhuBlau}{RGB}{0,106,179}
+\definecolor{hhuGruen}{RGB}{140,177,16}
+\definecolor{hhuRot}{RGB}{190,10,38}
+\definecolor{hhuOrange}{RGB}{238,127,0}
+\definecolor{hhuTuerkis}{RGB}{87,186,177}
+\definecolor{hhuDunkelblau}{RGB}{0,57,100}
+\definecolor{hhuEisblau}{RGB}{181,203,214}
+\definecolor{hhuSchwarz}{RGB}{0,0,0}
+\definecolor{hhuWeiss}{RGB}{255,255,255}
+
+% Text colors
+\setbeamercolor{normal text}{fg=black}
+\setbeamercolor{alerted text}{fg=hhuRot}
+\setbeamercolor{example text}{fg=hhuGruen}
+\setbeamercolor{structure}{fg=hhuBlau}
+
+\setbeamercolor{block title}{use=structure,fg=structure.fg,bg=structure.fg!30}
+\setbeamercolor{block title alerted}{use=alerted text,fg=alerted text.fg,bg=alerted text.fg!30}
+\setbeamercolor{block title example}{use=example text,fg=example text.fg,bg=example text.fg!30}
+
+\setbeamercolor{block body}{parent=normal text,use=block title,bg=block title.fg!10}
+\setbeamercolor{block body alerted}{parent=normal text,use=block title alerted,bg=block title alerted.fg!10}
+\setbeamercolor{block body example}{parent=normal text,use=block title example,bg=block title example.fg!10}
+
+\setbeamercolor{navigation symbols}{use=structure,fg=structure.fg}
+\setbeamercolor{navigation symbols dimmed}{use=structure,fg=structure.fg!50!bg}
+\setbeamercolor{separation line}{fg=hhuEisblau}
+
+% Embedded HHUD Outer Theme
+\makeatletter
+\beamer@compresstrue
+\makeatother
+
+\defbeamertemplate*{headline}{HHUD theme}
+{
+  \vskip.68cm
+}
+
+\defbeamertemplate*{footline}{HHUD theme}
+{
+  \hskip12pt
+  \textcolor{hhuWeiss}{\bf \insertframenumber{}\hspace*{14cm} hhu.de}
+  \vskip3.2pt
+}
+
+\setbeamertemplate{frametitle}{\color{hhuBlau}\insertframetitle\par \vspace*{.25cm} \insertframesubtitle}
+\setbeamertemplate{navigation symbols}{}
+
+% Embedded HHUD Inner Theme
+\useinnertheme{circles}
+
+\mode<all>
+
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\usepackage{lmodern}
+
+\setdefaultlanguage{german}
+
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{multirow}
+
+% Configure listings for Java
+\lstdefinestyle{java}{
+    language=Java,
+    basicstyle=\footnotesize\ttfamily,
+    keywordstyle=\color{blue}\bfseries,
+    commentstyle=\color{gray},
+    stringstyle=\color{red},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=5pt,
+    backgroundcolor=\color{white},
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    frame=single,
+    rulecolor=\color{black},
+    tabsize=2,
+    captionpos=b,
+    breaklines=true,
+    breakatwhitespace=false,
+    escapeinside={\%*}{*)}
+}
+
+%% Automatische Gliederungsfolien
+% Overview page at the start of each day (section) - shows ONLY topics for that day
+% Only show if section has subsections
+\AtBeginSection[] {
+  \ifnum\value{subsection}>0
+  \begin{frame}<beamer>
+    \thispagestyle{empty}
+    \frametitle{Überblick \insertsectionhead}
+    \vspace{-5mm}
+    {\large
+    \tableofcontents[currentsection,hideothersubsections,sectionstyle=show/hide]
+    }
+  \end{frame}
+  \fi
+}
+
+% Overview page before each subtopic (subsection) - shows ONLY current section's topics
+\AtBeginSubsection[] {
+  \begin{frame}<beamer>
+    \thispagestyle{empty}
+    \frametitle{Überblick - \insertsubsectionhead}
+    \vspace{-5mm}
+    {\large
+    \tableofcontents[currentsection,sectionstyle=show/hide,subsectionstyle=show/shaded/hide]
+    }
+  \end{frame}
+}
+
+\usebackgroundtemplate{\includegraphics[width=\paperwidth]{fig/background_cd_2020}}
+
+\newcommand{\backgroundNormal}{\usebackgroundtemplate{
+    \includegraphics[width=\paperwidth]{fig/background_cd_2020}}}
+\newcommand{\backgroundTitle}{\usebackgroundtemplate{
+    \includegraphics[width=\paperwidth]{fig/background_heine}}}
+\newcommand{\backgroundEmpty}{\usebackgroundtemplate{
+    \includegraphics[width=\paperwidth]{fig/background_empty}}}
+
+\setlength{\leftmargini}{9pt}
+\setbeamersize{text margin left=25pt,text margin right=25pt}
+\setbeamertemplate{itemize/enumerate subbody end}{\vspace{.5\baselineskip}}
+
+% % % % % % % % % %  CHANGE PRESENTATION INFORMATION HERE % % % % % % % % %
+\title{Programmierpraktikum 1}
+\subtitle{Nachklausurtutorium Sommersemester 2025}
+\author{Paul Christian Dötsch}
+\date{\today}
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+\institute{Institut für Informatik\\Heinrich-Heine-Universität Düsseldorf}
+\subject{Informatik}
+
+%
+% Hier beginnt das Dokument
+%
+\begin{document}
+
+\backgroundTitle
+  \begin{frame}
+    \thispagestyle{empty}
+    \begin{columns}
+    \column{0.4\paperwidth}
+    {
+    \footnotesize
+    \color{hhuBlau}
+    \put(20,-200){\insertdate}
+
+    }
+    \column{0.6\paperwidth}
+
+    \color{hhuBlau}
+    \LARGE \inserttitle\\[\baselineskip]
+    \large \insertsubtitle\\[2\baselineskip]
+
+    \large \insertauthor\\[\baselineskip]
+    \normalsize \insertinstitute
+    \end{columns}
+  \end{frame}
+  \backgroundNormal
+
+  % Table of contents
+  \begin{frame}
+    \thispagestyle{empty}
+    \frametitle{Überblick}
+    \vspace{-5mm}
+    {\large
+    \tableofcontents[hidesubsections]
+    }
+  \end{frame}
+
+  % % % % % % % % % % COURSE CONTENT BY DAYS % % % % % % % % % %
+
+  \input{tag0}
+
+  \input{tag1}
+
+  \input{tag2}
+
+  \input{tag3}
+
+  \input{tag4}
+
+  \input{tag5}
+
+  % % % % % % % % % % FINAL SLIDES % % % % % % % % % %
+
+  \section{Zusammenfassung}
+
+  \begin{frame}{Was haben wir (theoretisch) gelernt?}
+    \begin{columns}
+      \column{0.5\textwidth}
+      \textbf{Technische Skills:}
+      \begin{itemize}
+        \item Moderne Java-Features
+        \item Funktionale Programmierung
+        \item Testing mit TDD
+        \item Git Workflow
+        \item Spring Framework
+      \end{itemize}
+
+      \column{0.5\textwidth}
+      \textbf{Software-Design:}
+      \begin{itemize}
+        \item Code Smells erkennen
+        \item SOLID Prinzipien
+        \item Clean Code
+        \item Domain-Driven Design
+        \item Refactoring
+      \end{itemize}
+    \end{columns}
+
+    \begin{exampleblock}{Empfohlene Ressourcen}
+      \begin{itemize}
+        \item Clean Code - Robert C. Martin
+        \item Effective Java - Joshua Bloch
+        \item Spring Boot Documentation
+        \item Git Pro Book (kostenlos online)
+      \end{itemize}
+    \end{exampleblock}
+  \end{frame}
+
+  \begin{frame}{Fragen \& Diskussion}
+    \vspace{1cm}
+    \Large
+    \begin{center}
+      Vielen Dank für eure Aufmerksamkeit
+
+      \vspace{0.5cm}
+
+      \&
+
+      \vspace{0.5cm}
+
+      Viel Glück bei eurer Klausur!
+    \end{center}
+  \end{frame}
+
+\end{document}
+
+%
+% Hier endet das Dokument
+%

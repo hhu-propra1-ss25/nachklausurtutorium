@@ -1,0 +1,1825 @@
+\section{Tag 1 - Grundlagen \& Werkzeuge}
+
+% ===========================
+% Java-Basics & Klassenbibliothek
+% ===========================
+
+\subsection{Java-Basics \& Klassenbibliothek}
+
+\begin{frame}{Java Collections Framework - Überblick}
+  \begin{itemize}
+    \item Zentrale Datenstrukturen für moderne Java-Entwicklung
+    \item Drei Hauptkategorien: \textbf{List}, \textbf{Set}, \textbf{Map}, \textbf{Queue}
+    \item Gemeinsame Basis: \texttt{Collection<E>} Interface
+    \item Utility-Klassen: \texttt{Collections}, \texttt{Arrays}
+  \end{itemize}
+
+  \begin{exampleblock}{Kernmethoden des Collection Interface}
+    \begin{itemize}
+      \item \texttt{add(E)}, \texttt{addAll(Collection)}
+      \item \texttt{remove(Object)}, \texttt{contains(Object)}
+      \item \texttt{size()}, \texttt{isEmpty()}, \texttt{clear()}
+    \end{itemize}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{List Interface - Grundlagen}
+  \textbf{Eigenschaften:}
+  \begin{itemize}
+    \item Geordnete Sammlung mit Index-Zugriff
+    \item Duplikate erlaubt
+    \item Erweitert Collection um Index-basierte Operationen
+  \end{itemize}
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Wichtige Methoden:}
+    \begin{lstlisting}[style=java, basicstyle=\footnotesize\ttfamily]
+get(int index)
+set(int index, E element)
+add(int index, E element)
+remove(int index)
+indexOf(Object o)
+lastIndexOf(Object o)
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Beispiel:}
+    \begin{lstlisting}[style=java, basicstyle=\footnotesize\ttfamily]
+List<String> names = new ArrayList<>();
+names.add("Java");
+names.add(1, "Python");
+System.out.println(names.get(0)); // Java
+System.out.println(names); // [Java, Python]
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{ArrayList vs LinkedList}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{ArrayList}
+    \begin{itemize}
+      \item Array-basierte Implementierung
+      \item Schneller Zugriff: O(1)
+      \item Langsames Einfügen in der Mitte: O(n)
+      \item Automatische Größenerweiterung (um 50\%)
+    \end{itemize}
+
+    \begin{lstlisting}[style=java, basicstyle=\footnotesize\ttfamily]
+List<Integer> numbers = new ArrayList<>();
+numbers.add(1);
+numbers.add(2);
+numbers.add(1, 5); // [1, 5, 2]
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{LinkedList}
+    \begin{itemize}
+      \item Doppelt verkettete Liste
+      \item Implementiert auch Queue und Deque
+      \item Effizienter für häufiges Einfügen/Löschen
+      \item Kein Index-Zugriff in O(1)
+    \end{itemize}
+
+    \begin{lstlisting}[style=java, basicstyle=\footnotesize\ttfamily]
+LinkedList<String> words = new LinkedList<>();
+words.add("first");
+words.addFirst("start"); // [start, first]
+words.addLast("end");    // [start, first, end]
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Set Interface - Einzigartige Elemente}
+  \textbf{Eigenschaften:}
+  \begin{itemize}
+    \item Keine Duplikate (basiert auf \texttt{equals()} Methode)
+    \item Kein Index-basierter Zugriff
+    \item Drei wichtige Implementierungen
+  \end{itemize}
+
+  \begin{exampleblock}{HashSet - Häufigste Implementierung}
+    \begin{lstlisting}[style=java, basicstyle=\small\ttfamily]
+Set<Integer> numbers = new HashSet<>();
+numbers.add(5);
+numbers.add(5);  // Wird ignoriert - Set bleibt unverändert
+System.out.println(numbers.size());  // 1
+System.out.println(numbers.contains(5)); // true
+    \end{lstlisting}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Set Implementierungen im Detail}
+  \begin{columns}[T]
+    \column{0.33\textwidth}
+    \textbf{HashSet}
+    \begin{itemize}
+      \item Schnellste Implementierung
+      \item Keine Reihenfolge garantiert
+      \item Basiert auf Hash-Tabelle
+    \end{itemize}
+
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+Set<String> words = new HashSet<>();
+words.addAll(List.of("c", "a", "b"));
+// Reihenfolge nicht vorhersagbar
+    \end{lstlisting}
+
+    \column{0.33\textwidth}
+    \textbf{TreeSet}
+    \begin{itemize}
+      \item Elemente automatisch sortiert
+      \item Implementiert SortedSet
+      \item Erfordert Comparable oder Comparator
+    \end{itemize}
+
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+Set<Integer> sorted = new TreeSet<>();
+sorted.addAll(List.of(7,3,9,1));
+System.out.println(sorted);
+// [1, 3, 7, 9]
+    \end{lstlisting}
+
+    \column{0.33\textwidth}
+    \textbf{LinkedHashSet}
+    \begin{itemize}
+      \item Behält Einfügereihenfolge bei
+      \item Kombination aus Hash und Linked List
+      \item Etwas langsamer als HashSet
+    \end{itemize}
+
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+Set<String> ordered = new LinkedHashSet<>();
+ordered.addAll(List.of("c", "a", "b"));
+System.out.println(ordered);
+// [c, a, b]
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Queue Interface - FIFO Prinzip}
+  \textbf{Queue-Operationen:}
+  \begin{itemize}
+    \item \texttt{offer(E)} - Element einfügen
+    \item \texttt{poll()} - Element entfernen und zurückgeben (null wenn leer)
+    \item \texttt{peek()} - Element anschauen ohne zu entfernen (null wenn leer)
+  \end{itemize}
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \begin{lstlisting}[style=java, basicstyle=\footnotesize\ttfamily]
+Queue<String> q = new LinkedList<>();
+q.offer("first");
+q.offer("second");
+q.offer("third");
+
+System.out.println(q.peek()); // "first"
+System.out.println(q.poll()); // "first"
+System.out.println(q.poll()); // "second"
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Deque (Double Ended Queue):}
+    \begin{lstlisting}[style=java, basicstyle=\footnotesize\ttfamily]
+Deque<Integer> deque = new ArrayDeque<>();
+deque.offerFirst(1);  // [1]
+deque.offerLast(2);   // [1, 2]
+deque.offerFirst(0);  // [0, 1, 2]
+
+// Stack-Operationen:
+deque.push(5);        // [5, 0, 1, 2]
+Integer top = deque.pop(); // 5
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Map Interface - Key-Value Paare}
+  \textbf{Eigenschaften:}
+  \begin{itemize}
+    \item Speichert Key-Value Paare
+    \item Schlüssel sind eindeutig (keine Duplikate)
+    \item Nicht Teil der Collection-Hierarchie
+  \end{itemize}
+
+  \begin{exampleblock}{HashMap - Standard-Implementierung}
+    \begin{lstlisting}[style=java, basicstyle=\footnotesize\ttfamily]
+Map<String, Integer> ages = new HashMap<>();
+ages.put("Alice", 25);
+ages.put("Bob", 30);
+ages.put("Alice", 26); // Überschreibt vorherigen Wert
+
+System.out.println(ages.get("Alice")); // 26
+System.out.println(ages.getOrDefault("Charlie", 0)); // 0
+System.out.println(ages.containsKey("Bob")); // true
+    \end{lstlisting}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Map-Operationen im Detail}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Grundoperationen:}
+    \begin{lstlisting}[style=java, basicstyle=\scriptsize\ttfamily]
+Map<String, Integer> map = new HashMap<>();
+
+// Einfügen und Abrufen
+map.put("key1", 100);
+Integer value = map.get("key1");
+
+// Sichere Operationen
+map.putIfAbsent("key2", 200);
+Integer safe = map.getOrDefault("key3", -1);
+
+// Prüfungen
+boolean hasKey = map.containsKey("key1");
+boolean hasValue = map.containsValue(100);
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Iteration über Maps:}
+    \begin{lstlisting}[style=java, basicstyle=\scriptsize\ttfamily]
+// Über Schlüssel iterieren
+for (String key : map.keySet()) {
+    System.out.println(key + ": " + map.get(key));
+}
+
+// Über Werte iterieren
+for (Integer value : map.values()) {
+    System.out.println(value);
+}
+
+// Über Entry-Paare iterieren
+for (Map.Entry<String, Integer> entry : map.entrySet()) {
+    System.out.println(
+      entry.getKey() + " = " + entry.getValue()
+    );
+}
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Comparable vs Comparator}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Comparable Interface}
+    \begin{itemize}
+      \item \textit{Natürliche} Ordnung definieren
+      \item Implementiert von der Klasse selbst
+      \item Methode: \texttt{compareTo(T o)}
+    \end{itemize}
+
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+class Student implements Comparable<Student> {
+    private String name;
+    private int grade;
+
+    @Override
+    public int compareTo(Student other) {
+        // ACHTUNG: Overflow-Gefahr!
+        // return this.grade - other.grade;
+
+        // BESSER:
+        return Integer.compare(this.grade, other.grade);
+    }
+}
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Comparator Interface}
+    \begin{itemize}
+      \item \textit{Alternative} Ordnungen definieren
+      \item Externe Klasse oder Lambda
+      \item Methode: \texttt{compare(T o1, T o2)}
+    \end{itemize}
+
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Als separate Klasse
+class ReverseOrder implements Comparator<Integer> {
+    @Override
+    public int compare(Integer o1, Integer o2) {
+        return o2.compareTo(o1);
+    }
+}
+
+// Verwendung
+TreeSet<Integer> reversed = new TreeSet<>(new ReverseOrder());
+
+// Mit Lambda (später mehr dazu)
+TreeSet<Integer> desc = new TreeSet<>((a, b) -> b.compareTo(a));
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Collections Utility-Klasse}
+  \textbf{Wichtige statische Methoden:}
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+List<String> list = new ArrayList<>(
+    List.of("c", "a", "b"));
+
+// Sortieren
+Collections.sort(list);        // [a, b, c]
+
+// Umdrehen
+Collections.reverse(list);     // [c, b, a]
+
+// Mischen
+Collections.shuffle(list);     // zufällige Reihenfolge
+
+// Rotieren
+Collections.rotate(list, 1);   // [?, c, b] (je nach shuffle)
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Füllen
+Collections.fill(list, "x");   // [x, x, x]
+
+// Min/Max finden
+List<Integer> numbers = List.of(3, 1, 4, 1, 5);
+Integer min = Collections.min(numbers); // 1
+Integer max = Collections.max(numbers); // 5
+
+// Häufigkeit zählen
+int count = Collections.frequency(numbers, 1); // 2
+
+// Unveränderliche Views
+List<String> immutable = Collections.unmodifiableList(list);
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Optionals - Einführung}
+  \textbf{Problem mit null-Werten:}
+  \begin{itemize}
+    \item NullPointerException - häufigste Fehlerquelle
+    \item Implizite null-Checks überall nötig
+    \item Code wird unlesbar und fehleranfällig
+  \end{itemize}
+
+  \textbf{Optional als Lösung:}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \begin{lstlisting}[style=java, basicstyle=\scriptsize\ttfamily]
+// Traditionell - fehleranfällig
+public String findUserName(int id) {
+    User user = database.findUser(id);
+    if (user != null) {
+        return user.getName();
+    }
+    return null; // Könnte vergessen werden!
+}
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \begin{lstlisting}[style=java, basicstyle=\scriptsize\ttfamily]
+// Mit Optional - explizit
+public Optional<String> findUserName(int id) {
+    Optional<User> user = database.findUser(id);
+    return user.map(User::getName);
+}
+
+// Verwendung
+String name = findUserName(123)
+    .orElse("Unknown User");
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Sichtbarkeiten in Java}
+  \begin{center}
+    \begin{tabular}{|l|c|c|c|c|}
+    \hline
+    \textbf{Modifier} & \textbf{Klasse} & \textbf{Package} & \textbf{Subklasse} & \textbf{Überall} \\
+    \hline
+    \texttt{private} & \checkmark & & & \\
+    \hline
+    \textit{package-private} & \checkmark & \checkmark & & \\
+    \hline
+    \texttt{protected} & \checkmark & \checkmark & \checkmark & \\
+    \hline
+    \texttt{public} & \checkmark & \checkmark & \checkmark & \checkmark \\
+    \hline
+    \end{tabular}
+  \end{center}
+
+  \begin{exampleblock}{Besonderheit: private zwischen Instanzen}
+    \begin{lstlisting}[style=java, basicstyle=\scriptsize\ttfamily]
+class Outer {
+    private int value;
+
+    class Inner {
+        void method(Outer other) {
+            other.value = 42;  // OK! Private zwischen Instanzen derselben Klasse
+        }
+    }
+}
+    \end{lstlisting}
+  \end{exampleblock}
+\end{frame}
+
+% ===========================
+% Generics
+% ===========================
+
+\subsection{Generics}
+
+\begin{frame}[fragile]{Warum Generics? - Das Problem}
+  \textbf{Ohne Generics (Java < 5):}
+  \begin{itemize}
+    \item Alles war \texttt{Object}
+    \item Keine Typsicherheit zur Compile-Zeit
+    \item Casts überall nötig
+    \item ClassCastException zur Laufzeit möglich
+  \end{itemize}
+
+  \begin{alertblock}{Problematischer Code}
+    \begin{lstlisting}[style=java, basicstyle=\footnotesize\ttfamily]
+ArrayList list = new ArrayList();  // Raw Type
+list.add("String");
+list.add(new Integer(42));  // Gemischte Typen!
+
+String s = (String) list.get(1);  // ClassCastException!
+    \end{lstlisting}
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]{Statische Typisierung mit Generics}
+  \textbf{Mit Generics (Java 5+):}
+  \begin{itemize}
+    \item Typsicherheit zur Compile-Zeit
+    \item Keine Casts nötig
+    \item Klarere APIs und bessere Dokumentation
+    \item Bessere Performance (keine Boxing bei primitiven Collections)
+  \end{itemize}
+
+  \begin{exampleblock}{Typsicherer Code}
+    \begin{lstlisting}[style=java, basicstyle=\footnotesize\ttfamily]
+ArrayList<String> list = new ArrayList<>();  // Diamond Operator (Java 7+)
+list.add("String");
+list.add(42);  // Kompilier-Fehler!
+
+String s = list.get(0);  // Kein Cast nötig
+    \end{lstlisting}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Pattern Matching mit instanceof (Java 17+)}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Traditionell:}
+    \begin{lstlisting}[style=java, basicstyle=\footnotesize\ttfamily]
+if (obj instanceof String) {
+    String str = (String) obj;
+    System.out.println(str.toUpperCase());
+}
+
+if (obj instanceof Integer) {
+    Integer num = (Integer) obj;
+    System.out.println(num * 2);
+}
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Mit Pattern Matching:}
+    \begin{lstlisting}[style=java, basicstyle=\footnotesize\ttfamily]
+if (obj instanceof String str) {
+    System.out.println(str.toUpperCase());
+}
+
+if (obj instanceof Integer num) {
+    System.out.println(num * 2);
+}
+
+// Auch in switch möglich (Java 21+)
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Generische Datentypen definieren}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Einfacher generischer Typ:}
+    \begin{lstlisting}[style=java, basicstyle=\scriptsize\ttfamily]
+public class Box<T> {
+    private T content;
+
+    public Box(T content) {
+        this.content = content;
+    }
+
+    public T getContent() {
+        return content;
+    }
+
+    public void setContent(T content) {
+        this.content = content;
+    }
+}
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Mehrere Typparameter:}
+    \begin{lstlisting}[style=java, basicstyle=\scriptsize\ttfamily]
+public class Pair<T, U> {
+    private final T first;
+    private final U second;
+
+    public Pair(T first, U second) {
+        this.first = first;
+        this.second = second;
+    }
+
+    public T getFirst() { return first; }
+    public U getSecond() { return second; }
+}
+
+// Verwendung:
+Pair<String, Integer> nameAge =
+    new Pair<>("Alice", 25);
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Type Constraints mit extends}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Einfacher Constraint:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Nur Number und Subtypen erlaubt
+public class NumberBox<T extends Number> {
+    private T value;
+
+    public NumberBox(T value) {
+        this.value = value;
+    }
+
+    public double getDoubleValue() {
+        return value.doubleValue(); // Möglich wegen Number
+    }
+}
+
+// Verwendung:
+NumberBox<Integer> intBox = new NumberBox<>(42);
+NumberBox<String> strBox = new NumberBox<>("text"); // Fehler!
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Self-referencing Constraint:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// T muss mit sich selbst vergleichbar sein
+public class SortedList<T extends Comparable<T>> {
+    private List<T> elements = new ArrayList<>();
+
+    public void add(T element) {
+        elements.add(element);
+        Collections.sort(elements); // Funktioniert!
+    }
+
+    public T getMin() {
+        return Collections.min(elements);
+    }
+}
+
+// Verwendung:
+SortedList<String> strings = new SortedList<>();
+SortedList<Object> objects = new SortedList<>(); // Fehler!
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Generische Methoden}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class ArrayUtils {
+
+    // Generische statische Methode
+    public static <T> List<T> arrayToList(T[] array) {
+        List<T> list = new ArrayList<>();
+        for (T element : array) {
+            list.add(element);
+        }
+        return list;
+    }
+
+    // Mit Constraint
+    public static <T extends Comparable<T>> T findMax(T[] array) {
+        if (array.length == 0) {
+            throw new IllegalArgumentException("Array empty");
+        }
+
+        T max = array[0];
+        for (T element : array) {
+            if (element.compareTo(max) > 0) {
+                max = element;
+            }
+        }
+        return max;
+    }
+}
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Verwendung:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Type Inference - Compiler leitet Typen ab
+String[] names = {"Alice", "Bob", "Charlie"};
+List<String> nameList = ArrayUtils.arrayToList(names);
+
+Integer[] numbers = {3, 1, 4, 1, 5};
+List<Integer> numberList = ArrayUtils.arrayToList(numbers);
+
+// Explizite Typangabe möglich
+List<String> explicit = ArrayUtils.<String>arrayToList(names);
+
+// findMax Beispiel
+String longest = ArrayUtils.findMax(names); // "Charlie"
+Integer biggest = ArrayUtils.findMax(numbers); // 5
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+% ===========================
+% Funktionale Programmierung
+% ===========================
+
+\subsection{Funktionale Programmierung}
+
+\begin{frame}{Funktionale Interfaces - Überblick}
+  \textbf{Funktionale Interfaces seit Java 8:}
+  \begin{itemize}
+    \item Interface mit \textbf{genau einer} abstrakten Methode
+    \item Verwendbar mit Lambda-Ausdrücken
+    \item Annotation \texttt{@FunctionalInterface} zur Dokumentation
+    \item Vordefinierte Interfaces im Package \texttt{java.util.function}
+  \end{itemize}
+
+  \begin{center}
+    \begin{tabular}{|l|l|l|}
+    \hline
+    \textbf{Interface} & \textbf{Signatur} & \textbf{Zweck} \\
+    \hline
+    \texttt{Consumer<T>} & \texttt{T $\rightarrow$ void} & Seiteneffekt ausführen \\
+    \hline
+    \texttt{Supplier<T>} & \texttt{() $\rightarrow$ T} & Wert erzeugen \\
+    \hline
+    \texttt{Function<T,R>} & \texttt{T $\rightarrow$ R} & Transformation \\
+    \hline
+    \texttt{Predicate<T>} & \texttt{T $\rightarrow$ boolean} & Bedingung prüfen \\
+    \hline
+    \texttt{BiFunction<T,U,R>} & \texttt{(T,U) $\rightarrow$ R} & Zwei-Parameter Funktion \\
+    \hline
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]{Consumer<T> - Seiteneffekte}
+  \textbf{Nimmt einen Parameter, gibt nichts zurück:}
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Consumer definieren
+Consumer<String> printer = s -> System.out.println(s);
+Consumer<String> upperPrinter = s -> System.out.println(s.toUpperCase());
+
+// Verwenden
+printer.accept("Hello World");
+upperPrinter.accept("Hello World");
+
+// Mit forEach
+List<String> words = List.of("Java", "Python", "JavaScript");
+words.forEach(printer);
+words.forEach(upperPrinter);
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Consumer verketten mit andThen
+Consumer<String> print = s -> System.out.print(s);
+Consumer<String> newline = s -> System.out.println();
+
+Consumer<String> printWithNewline = print.andThen(newline);
+printWithNewline.accept("Hello");
+
+// Komplexeres Beispiel
+Consumer<Person> emailSender = person ->
+    emailService.sendWelcome(person.getEmail());
+Consumer<Person> logger = person ->
+    log.info("Processed: " + person.getName());
+
+Consumer<Person> processNewUser = emailSender.andThen(logger);
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Supplier<T> - Werte erzeugen}
+  \textbf{Nimmt keine Parameter, gibt einen Wert zurück:}
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Einfache Supplier
+Supplier<Double> randomValue = () -> Math.random();
+Supplier<String> greeting = () -> "Hello World";
+Supplier<LocalDateTime> currentTime = LocalDateTime::now;
+
+// Verwenden
+double rand = randomValue.get();
+String msg = greeting.get();
+LocalDateTime now = currentTime.get();
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Lazy Initialization
+public class ExpensiveObject {
+    private Supplier<String> lazyValue = () -> {
+        System.out.println("Computing expensive value...");
+        return "Expensive Result";
+    };
+
+    public String getValue() {
+        return lazyValue.get();
+    }
+}
+
+// Factory Pattern
+Supplier<List<String>> listFactory = ArrayList::new;
+List<String> newList = listFactory.get();
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Function<T,R> - Transformationen}
+  \textbf{Nimmt einen Parameter, gibt transformierten Wert zurück:}
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Einfache Funktionen
+Function<String, Integer> length = s -> s.length();
+Function<String, String> toUpper = s -> s.toUpperCase();
+Function<Integer, Integer> square = x -> x * x;
+
+// Verwenden
+Integer len = length.apply("Hello");  // 5
+String upper = toUpper.apply("hello"); // "HELLO"
+Integer squared = square.apply(4);    // 16
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Funktionen verketten
+Function<String, String> normalize = s -> s.trim().toLowerCase();
+Function<String, Integer> wordCount = s -> s.split("\\s+").length;
+
+Function<String, Integer> countNormalized =
+    normalize.andThen(wordCount);
+
+Integer count = countNormalized.apply("  Hello World  "); // 2
+
+// Compose (umgekehrte Richtung)
+Function<String, Integer> lengthOfUpper =
+    length.compose(toUpper);
+// Entspricht: s -> length.apply(toUpper.apply(s))
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Predicate<T> - Bedingungen prüfen}
+  \textbf{Nimmt einen Parameter, gibt boolean zurück:}
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Einfache Prädikate
+Predicate<String> isEmpty = s -> s.isEmpty();
+Predicate<String> isLong = s -> s.length() > 10;
+Predicate<Integer> isEven = n -> n % 2 == 0;
+Predicate<Integer> isPositive = n -> n > 0;
+
+// Verwenden
+boolean empty = isEmpty.test("");     // true
+boolean long = isLong.test("Short");   // false
+boolean even = isEven.test(42);       // true
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Prädikate kombinieren
+Predicate<Integer> isPositiveEven = isPositive.and(isEven);
+Predicate<Integer> isNegativeOrOdd = isPositive.negate().or(isEven.negate());
+
+List<Integer> numbers = List.of(-2, -1, 0, 1, 2, 3, 4);
+
+// Mit filter verwenden
+List<Integer> positiveEvens = numbers.stream()
+    .filter(isPositiveEven)
+    .toList(); // [2, 4]
+
+// Statische Utility-Methoden
+Predicate<Object> isNull = Objects::isNull;
+Predicate<String> isEqual = Predicate.isEqual("test");
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Lambda-Ausdrücke - Syntax}
+  \textbf{Verschiedene Syntaxformen:}
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Parameter-Syntax:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Mit Typdeklaration
+Consumer<String> c1 = (String s) -> System.out.println(s);
+
+// Ohne Typdeklaration (Type Inference)
+Consumer<String> c2 = (s) -> System.out.println(s);
+
+// Ohne Klammern (bei einem Parameter)
+Consumer<String> c3 = s -> System.out.println(s);
+
+// Mehrere Parameter
+BiFunction<Integer, Integer, Integer> add = (a, b) -> a + b;
+
+// Keine Parameter
+Supplier<String> greeting = () -> "Hello";
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Body-Syntax:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Expression (kein return nötig)
+Function<Integer, Integer> square = x -> x * x;
+
+// Statement Block (return erforderlich)
+Function<String, String> process = s -> {
+    String trimmed = s.trim();
+    String upper = trimmed.toUpperCase();
+    return upper;
+};
+
+// Void Block
+Consumer<String> debug = s -> {
+    System.out.println("Processing: " + s);
+    // Kein return
+};
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Methodenreferenzen}
+  \textbf{Kompakte Alternative zu Lambda-Ausdrücken:}
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Statische Methoden:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Lambda
+Function<String, Integer> parseInt1 = s -> Integer.parseInt(s);
+
+// Methodenreferenz
+Function<String, Integer> parseInt2 = Integer::parseInt;
+
+// Verwendung mit Collections
+List<String> numbers = List.of("1", "2", "3");
+List<Integer> parsed = numbers.stream()
+    .map(Integer::parseInt)
+    .toList();
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Instanzmethoden:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Auf bestimmter Instanz
+List<String> words = List.of("hello", "world");
+words.forEach(System.out::println);
+
+// Auf Parameter (unbound reference)
+Function<String, String> toUpper1 = s -> s.toUpperCase();
+Function<String, String> toUpper2 = String::toUpperCase;
+
+// Konstruktor-Referenzen
+Supplier<ArrayList<String>> listSupplier = ArrayList::new;
+Function<String, StringBuilder> sbFactory = StringBuilder::new;
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Funktionen höherer Ordnung}
+  \textbf{Methoden, die Funktionen als Parameter nehmen oder zurückgeben:}
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{forEach implementieren:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class MyList<T> {
+    private List<T> elements = new ArrayList<>();
+
+    public void forEach(Consumer<T> action) {
+        for (T element : elements) {
+            action.accept(element);
+        }
+    }
+
+    public void addIf(T element, Predicate<T> condition) {
+        if (condition.test(element)) {
+            elements.add(element);
+        }
+    }
+}
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Funktionen zurückgeben:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+public class FunctionFactory {
+
+    public static Predicate<Integer> greaterThan(int threshold) {
+        return value -> value > threshold;
+    }
+
+    public static Function<String, String> addPrefix(String prefix) {
+        return text -> prefix + text;
+    }
+}
+
+// Verwendung
+Predicate<Integer> greaterThan10 = FunctionFactory.greaterThan(10);
+Function<String, String> addHello = FunctionFactory.addPrefix("Hello, ");
+
+boolean result = greaterThan10.test(15); // true
+String greeting = addHello.apply("World"); // "Hello, World"
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+% ===========================
+% Streams
+% ===========================
+
+\subsection{Streams}
+
+\begin{frame}[fragile]{Stream-API Motivation}
+  \textbf{Problem mit traditioneller Programmierung:}
+  \begin{itemize}
+    \item Viel Boilerplate-Code für einfache Operationen
+    \item Schleifen vermischen "Was" und "Wie"
+    \item Schwer parallelisierbar
+    \item Wenig deklarativ
+  \end{itemize}
+
+  \begin{exampleblock}{Beispiel: Erste 3 gerade Zahlen > 5, quadriert}
+    \textbf{Traditional:} 15+ Zeilen mit for-Schleifen, if-Statements, temporären Variablen
+
+    \textbf{Mit Streams:}
+    \begin{lstlisting}[style=java, basicstyle=\footnotesize\ttfamily]
+numbers.stream()
+    .filter(x -> x > 5)
+    .filter(x -> x % 2 == 0)
+    .limit(3)
+    .map(x -> x * x)
+    .toList();
+    \end{lstlisting}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Stream Creation \& Sources}
+  \textbf{Alle Wege, Streams zu erzeugen:}
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Aus Collections:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+List<String> list = List.of("a", "b", "c");
+list.stream();
+list.parallelStream();
+
+Set<Integer> set = Set.of(1, 2, 3);
+set.stream();
+
+Map<String, Integer> map = Map.of("a", 1, "b", 2);
+map.keySet().stream();
+map.values().stream();
+map.entrySet().stream();
+    \end{lstlisting}
+
+    \textbf{Aus Arrays:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+String[] array = {"x", "y", "z"};
+Arrays.stream(array);
+Arrays.stream(array, 1, 3);  // Teilbereich
+
+int[] ints = {1, 2, 3};
+Arrays.stream(ints);         // IntStream
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Generierung:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+Stream.generate(Math::random);
+Stream.generate(() -> "hello");
+
+Stream.iterate(0, n -> n + 1);
+Stream.iterate(0, n -> n < 100, n -> n + 2);  // Java 9+
+    \end{lstlisting}
+
+    \textbf{Primitive Streams:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+IntStream.range(0, 10);           // 0-9
+IntStream.rangeClosed(1, 10);     // 1-10
+IntStream.of(1, 2, 3);
+
+LongStream.range(0L, 1000L);
+DoubleStream.of(1.1, 2.2, 3.3);
+    \end{lstlisting}
+
+    \textbf{Spezielle Quellen:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+Stream.of("a", "b", "c");         // Stream<String>
+"Hello".chars();                  // IntStream
+new Random().ints(100, 0, 50);    // 100 random ints
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Filtering \& Mapping Operations}
+  \textbf{Grundlegende Transformations-Operationen:}
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Filtering:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+stream.filter(x -> x > 5);
+stream.filter(String::isEmpty);
+stream.filter(Predicate.not(String::isEmpty));
+    \end{lstlisting}
+
+    \textbf{Mapping:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+stream.map(x -> x * 2);
+stream.map(Person::getName);
+
+// Zu primitiven Typen und zu Object
+stream.mapToInt(String::length);
+stream.mapToLong(String::length);
+stream.mapToDouble(String::length);
+intStream.mapToObj(i -> "Number: " + i);
+    \end{lstlisting}
+
+    \textbf{FlatMapping:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+stream.flatMap(Collection::stream);
+stream.flatMap(s -> Arrays.stream(s.split(",")));
+stream.flatMapToInt(s -> s.chars());
+stream.flatMapToDouble(list -> list.stream().mapToDouble(x -> x));
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Deduplication:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+stream.distinct();                // Basiert auf equals()
+    \end{lstlisting}
+
+    \textbf{Praktische Beispiele:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Wörter zu Längen
+List.of("Java", "Python", "C++").stream()
+    .mapToInt(String::length)
+    .toArray();  // [4, 6, 3]
+
+// Verschachtelte Listen flach machen
+List.of(List.of("a", "b"), List.of("c")).stream()
+    .flatMap(Collection::stream)
+    .toList();  // [a, b, c]
+
+// CSV zu Zahlen
+"1,2,3".split(",").stream()
+    .mapToDouble(Double::parseDouble)
+    .sum();  // 6.0
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Ordering \& Limiting Operations}
+  \textbf{Stream-Reihenfolge und -Größe kontrollieren:}
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Sorting:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+stream.sorted();                          // Natural order
+stream.sorted(Comparator.naturalOrder());
+stream.sorted(Comparator.reverseOrder());
+stream.sorted(String.CASE_INSENSITIVE_ORDER);
+
+// Mit Comparator
+stream.sorted(Comparator.comparing(Person::getName));
+stream.sorted(Comparator.comparing(String::length)
+    .thenComparing(String::compareTo));
+
+// Primitive Streams
+intStream.sorted();
+doubleStream.sorted();
+    \end{lstlisting}
+
+    \textbf{Limiting:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+stream.limit(10);                         // Erste 10
+stream.skip(5);                           // Überspringe erste 5
+stream.skip(5).limit(10);                 // Elemente 5-14
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Conditional Operations (Java 9+):}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+stream.takeWhile(x -> x < 100);           // Solange Bedingung
+stream.dropWhile(x -> x < 10);            // Überspringe solange
+    \end{lstlisting}
+
+    \textbf{Debugging:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+stream.peek(System.out::println);         // Debug-Output
+stream.peek(x -> log.debug("Processing: " + x));
+    \end{lstlisting}
+
+    \textbf{Kombinierte Beispiele:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Top 3 längste Wörter
+words.stream()
+    .sorted(Comparator.comparing(String::length).reversed())
+    .limit(3)
+    .toList();
+
+// Zahlen ab der ersten geraden, max 5
+IntStream.iterate(1, n -> n + 1)
+    .dropWhile(n -> n % 2 != 0)
+    .limit(5)
+    .toArray();  // [2, 3, 4, 5, 6]
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Collection \& Basic Terminals}
+  \textbf{Stream-Ergebnisse sammeln und konsumieren:}
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Basic Collection:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+stream.toList();
+stream.collect(Collectors.toList());
+stream.collect(Collectors.toSet());
+stream.collect(Collectors.toCollection(LinkedList::new));
+
+// To Array
+stream.toArray();
+stream.toArray(String[]::new);
+intStream.toArray();
+    \end{lstlisting}
+
+    \textbf{To Map:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+stream.collect(Collectors.toMap(
+    Function.identity(),                      // Key mapper
+    String::length                            // Value mapper
+));
+
+// Mit Duplikat-Behandlung
+stream.collect(Collectors.toMap(
+    Person::getId,
+    Function.identity(),
+    (existing, replacement) -> existing       // Merge function
+));
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Iteration:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+stream.forEach(System.out::println);
+stream.forEachOrdered(System.out::println);   // Parallele Streams
+    \end{lstlisting}
+
+    \textbf{Counting \& Basic Stats:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+stream.count();                               // long
+stream.collect(Collectors.counting());        // Long
+
+// Primitive streams
+intStream.count();
+intStream.sum();
+intStream.average();                          // OptionalDouble
+intStream.summaryStatistics();                // IntSummaryStatistics
+    \end{lstlisting}
+
+    \textbf{String Operations:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+stream.collect(Collectors.joining());         // "abc"
+stream.collect(Collectors.joining(", "));     // "a, b, c"
+stream.collect(Collectors.joining(", ", "[", "]"));  // "[a, b, c]"
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Matching, Finding \& Aggregation}
+  \textbf{Stream-Inhalte prüfen und reduzieren:}
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Matching:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+stream.anyMatch(x -> x > 10);                 // boolean
+stream.allMatch(x -> x > 0);                  // boolean
+stream.noneMatch(String::isEmpty);            // boolean
+    \end{lstlisting}
+
+    \textbf{Finding:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+stream.findFirst();                           // Optional<T>
+stream.findAny();                             // Optional<T>
+    \end{lstlisting}
+
+    \textbf{Min/Max:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+stream.min(Comparator.naturalOrder());        // Optional<T>
+stream.max(String::compareTo);                // Optional<T>
+
+// Primitive streams
+intStream.min();                              // OptionalInt
+doubleStream.max();                           // OptionalDouble
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Reduction:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Mit Identity
+stream.reduce("", String::concat);            // String
+intStream.reduce(0, Integer::sum);            // int
+intStream.reduce(1, (a, b) -> a * b);         // Produkt
+
+// Mit Combiner
+stream.reduce("",
+    String::concat,                           // Accumulator
+    String::concat                            // Combiner
+);
+    \end{lstlisting}
+
+    \textbf{Praktische Beispiele:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Längstes Wort finden
+words.stream()
+    .max(Comparator.comparing(String::length));
+
+// Alle Zahlen positiv?
+numbers.stream().allMatch(n -> n > 0);
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Advanced Collectors}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Grouping:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Einfache Gruppierung
+stream.collect(Collectors.groupingBy(String::length));
+// Map<Integer, List<String>>
+
+// Mit Downstream-Collector
+stream.collect(Collectors.groupingBy(
+    String::length,
+    Collectors.counting()                     // Anzahl pro Gruppe
+));  // Map<Integer, Long>
+
+stream.collect(Collectors.groupingBy(
+    String::length,
+    Collectors.toSet()                        // Set statt List
+));  // Map<Integer, Set<String>>
+
+// Mit spezifischer Map-Implementierung
+stream.collect(Collectors.groupingBy(
+    String::length,
+    TreeMap::new,                             // Sortierte Keys
+    Collectors.toList()
+));  // TreeMap<Integer, List<String>>
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+
+    \textbf{Partitioning:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+stream.collect(Collectors.partitioningBy(s -> s.length() > 4));
+// Map<Boolean, List<String>>
+
+stream.collect(Collectors.partitioningBy(
+    s -> s.length() > 4,
+    Collectors.counting()
+));  // Map<Boolean, Long>
+    \end{lstlisting}
+
+    \textbf{Statistical Collectors:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+stream.collect(Collectors.summingInt(String::length));
+stream.collect(Collectors.averagingDouble(String::length));
+stream.collect(Collectors.summarizingLong(String::length));
+// LongSummaryStatistics mit count, sum, min, max, average
+    \end{lstlisting}
+
+    \textbf{Min/Max by:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+stream.collect(Collectors.maxBy(
+    Comparator.comparing(String::length)
+));  // Optional<String>
+stream.collect(Collectors.minBy(String::compareTo));
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Primitive Streams \& Performance}
+  \textbf{IntStream, LongStream, DoubleStream - optimiert für Primitive:}
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Creation:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+IntStream.range(0, 10);
+IntStream.of(1, 2, 3, 4, 5);
+IntStream.generate(() -> (int)(Math.random() * 100));
+IntStream.iterate(0, n -> n + 2);
+
+// Von Streams konvertieren
+stream.mapToInt(String::length);
+stream.mapToLong(String::length);
+stream.mapToDouble(String::length);
+    \end{lstlisting}
+
+    \textbf{Spezielle Operationen:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+intStream.sum();                             // int
+intStream.average();                         // OptionalDouble
+intStream.min();                             // OptionalInt
+intStream.max();                             // OptionalInt
+intStream.summaryStatistics();               // IntSummaryStatistics
+
+// Typ-Konvertierung (von einen PrimitiveStream in einen anderen)
+intStream.asLongStream();                    // LongStream
+intStream.asDoubleStream();                  // DoubleStream
+longStream.asDoubleStream();                 // DoubleStream
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Boxing/Unboxing:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Zu Object Stream
+intStream.boxed();                           // Stream<Integer>
+intStream.mapToObj(i -> "Number: " + i);     // Stream<String>
+
+// Von Object Stream
+Stream.of(1, 2, 3).mapToInt(Integer::intValue);
+Stream.of("1", "2").mapToDouble(Double::parseDouble);
+    \end{lstlisting}
+
+    \textbf{Performance-Vorteile:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// SCHLECHT - Boxing overhead
+Stream.of(1, 2, 3, 4, 5)
+    .mapToInt(Integer::intValue)
+    .sum();
+
+// BESSER - Direkt primitiv
+IntStream.of(1, 2, 3, 4, 5)
+    .sum();
+
+// Praktische Anwendung: Fibonacci-Zahlen
+IntStream.iterate(0, n -> n + 1)
+    .limit(10)
+    .map(n -> fibonacci(n))
+    .sum();
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Parallel Streams \& Best Practices}
+  \textbf{Automatische Parallelisierung mit Vorsicht:}
+
+  \begin{columns}[T]
+    \column{0.4\textwidth}
+    \textbf{Wann sinnvoll:}
+    \begin{itemize}
+      \item Große Datenmengen (> 10.000 Elemente)
+      \item CPU-intensive Operationen
+      \item Unabhängige Verarbeitung
+      \item Mehrere CPU-Kerne verfügbar
+      \item Kein shared mutable state
+    \end{itemize}
+
+    \textbf{Wann NICHT sinnvoll:}
+    \begin{itemize}
+      \item I/O-intensive Operationen
+      \item Kleine Datenmengen
+      \item Bereits parallele Umgebung
+      \item Reihenfolge wichtig
+    \end{itemize}
+
+    \column{0.6\textwidth}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily]
+// Erzeugung
+list.parallelStream();
+stream.parallel();
+stream.isParallel();  // boolean
+
+// GEFÄHRLICH - Race Conditions
+List<String> results = new ArrayList<>();
+words.parallelStream()
+    .forEach(w -> results.add(w.toUpperCase()));  // FEHLER!
+
+// SICHER - Collectors verwenden
+List<String> safe = words.parallelStream()
+    .map(String::toUpperCase)
+    .collect(Collectors.toList());
+
+// CPU-intensiv: GUT für Parallelisierung
+IntStream.range(0, 1_000_000)
+    .parallel()
+    .filter(this::isPrime)
+    .count();
+
+// I/O-bound: SCHLECHT für Parallelisierung
+list.parallelStream()
+    .map(this::readFromDatabase)  // Langsam
+    .collect(Collectors.toList());
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+% ===========================
+% Werkzeuge für Softwareentwicklung
+% ===========================
+
+\subsection{Werkzeuge für Softwareentwicklung}
+
+\begin{frame}{Gradle - Build Automation Tool}
+  \textbf{Warum Build Tools?}
+  \begin{itemize}
+    \item Automatisierung von Kompilierung, Tests, Packaging
+    \item Abhängigkeitsverwaltung (Dependencies)
+    \item Standardisierte Projektstruktur
+    \item Integration mit IDEs und CI/CD
+  \end{itemize}
+
+  \textbf{Gradle vs. Alternatives:}
+  \begin{itemize}
+    \item \textbf{Maven}: XML-basiert, sehr verbreitet
+    \item \textbf{Gradle}: Groovy/Kotlin DSL, flexibler, schneller
+    \item \textbf{SBT}: Hauptsächlich für Scala
+  \end{itemize}
+
+  \begin{exampleblock}{Gradle Vorteile}
+    \begin{itemize}
+      \item Inkrementelle Builds (nur geänderte Teile)
+      \item Build Cache für bessere Performance
+      \item Flexible Projektstrukturen möglich
+    \end{itemize}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Gradle Projektstruktur}
+  \textbf{Standard-Layout (Convention over Configuration):}
+
+  \begin{columns}[T]
+    \column{0.4\textwidth}
+    \begin{lstlisting}[style=java, basicstyle=\scriptsize\ttfamily, language={}]
+myproject/
+|-- build.gradle
+|-- settings.gradle
+|-- gradle/
+|   +-- wrapper/
+|-- gradlew        (Unix)
+|-- gradlew.bat    (Windows)
++-- src/
+    |-- main/
+    |   |-- java/
+    |   |   +-- com/example/
+    |   |       +-- Main.java
+    |   +-- resources/
+    +-- test/
+        +-- java/
+            +-- com/example/
+                +-- MainTest.java
+    \end{lstlisting}
+
+    \column{0.6\textwidth}
+    \textbf{Wichtige Dateien:}
+    \begin{itemize}
+      \item \texttt{build.gradle} - Build-Konfiguration
+      \item \texttt{settings.gradle} - Projekt-Einstellungen
+      \item \texttt{gradlew} - Gradle Wrapper (empfohlen)
+    \end{itemize}
+
+    \textbf{Verzeichnisse:}
+    \begin{itemize}
+      \item \texttt{src/main/java} - Produktions-Code
+      \item \texttt{src/main/resources} - Ressourcen (Konfiguration, etc.)
+      \item \texttt{src/test/java} - Test-Code
+      \item \texttt{build/} - Generierte Dateien (nicht versioniert)
+    \end{itemize}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Gradle Build-Datei Beispiel}
+  \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily, language={}]
+plugins {
+    id 'java'                    // Java-Plugin für Kompilierung
+    id 'application'             // Anwendungs-Plugin für run-Task
+}
+
+repositories {
+    mavenCentral()              // Standard Java-Repository
+}
+
+dependencies {
+    // Produktions-Dependencies
+    implementation 'com.google.guava:guava:33.1.0-jre'
+    implementation 'org.apache.commons:commons-collections4:4.4'
+
+    // Test-Dependencies
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.12.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.12.2'
+    testImplementation 'org.assertj:assertj-core:3.27.3'
+}
+
+application {
+    mainClass = 'com.example.Main'  // Hauptklasse für run-Task
+}
+
+test {
+    useJUnitPlatform()          // JUnit 5 verwenden
+}
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Wichtige Gradle Tasks}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Build-Tasks:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily, language={}]
+gradle compile          # Nur kompilieren
+gradle assemble         # JAR erstellen (ohne Tests)
+gradle build            # Vollständiger Build mit Tests
+gradle clean            # Build-Verzeichnis löschen
+gradle jar              # JAR-Datei erstellen
+    \end{lstlisting}
+
+    \textbf{Run-Tasks:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily, language={}]
+gradle run              # Anwendung ausführen
+gradle test             # Tests ausführen
+gradle distZip          # ZIP-Distribution erstellen
+gradle installDist      # Lokale Installation
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Task-Abkürzungen:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily, language={}]
+gradle b                # build
+gradle cJ               # compileJava
+gradle dZ               # distZip
+gradle iD               # installDist
+    \end{lstlisting}
+
+    \textbf{Info-Tasks:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily, language={}]
+gradle tasks            # Alle verfügbaren Tasks
+gradle dependencies     # Dependency-Tree anzeigen
+gradle projects         # Multi-Project Info
+gradle properties       # Projekt-Properties
+    \end{lstlisting}
+  \end{columns}
+
+  \begin{alertblock}{Tipp: Gradle Wrapper verwenden}
+    \texttt{./gradlew build} statt \texttt{gradle build} - garantiert richtige Gradle-Version!
+  \end{alertblock}
+\end{frame}
+
+\begin{frame}{Packages und Classpath}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Java Package System:}
+    \begin{itemize}
+      \item Organisiert Klassen in Namensräumen
+      \item Vermeidet Namenskonflikte
+      \item Ermöglicht Access Control (package-private)
+      \item Spiegelt Verzeichnisstruktur wider
+    \end{itemize}
+
+    \column{0.5\textwidth}
+    \textbf{Classpath:}
+    \begin{itemize}
+      \item Suchpfad für .class-Dateien und JAR-Archive
+      \item Trenner: \texttt{:} (Unix/Linux) oder \texttt{;} (Windows)
+      \item Aktuelles Verzeichnis: \texttt{.}
+    \end{itemize}
+  \end{columns}
+
+  \begin{exampleblock}{Package-Regeln}
+    \begin{itemize}
+      \item Package-Deklaration ist erste Zeile (außer Kommentaren)
+      \item Dateipfad muss Package entsprechen
+      \item Naming Convention: Reverse Domain (com.example.myapp)
+      \item Keine Leerzeichen oder Sonderzeichen
+    \end{itemize}
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{JAR-Dateien}
+  \textbf{Java Archive (JAR) - ZIP-Archive für Java:}
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{JAR erstellen:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily, language={}]
+# Einfache JAR
+jar cf myapp.jar *.class
+
+# Mit Manifest
+jar cfm myapp.jar MANIFEST.MF *.class
+
+# Mit Gradle
+gradle jar  # Erstellt JAR in build/libs/
+    \end{lstlisting}
+
+    \textbf{JAR ausführen:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily, language={}]
+# Mit Klassenname
+java -cp myapp.jar com.example.Main
+
+# Ausführbare JAR (mit Main-Class im Manifest)
+java -jar myapp.jar
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{MANIFEST.MF Beispiel:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily, language={}]
+Manifest-Version: 1.0
+Main-Class: com.example.Main
+Class-Path: lib/dependency1.jar lib/dependency2.jar
+    \end{lstlisting}
+
+    \textbf{JAR inspizieren:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily, language={}]
+jar tf myapp.jar        # Inhalt auflisten
+jar xf myapp.jar        # Extrahieren
+unzip -l myapp.jar      # Alternative mit unzip
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Git - Versionskontrolle Grundlagen}
+  \textbf{Warum Versionskontrolle?}
+  \begin{itemize}
+    \item Änderungen nachvollziehen (Wer? Wann? Was? Warum?)
+    \item Zusammenarbeit im Team
+    \item Backup und Wiederherstellung
+    \item Experimente und Branches
+    \item Release-Management
+  \end{itemize}
+
+  \textbf{Git Konzepte:}
+  \begin{itemize}
+    \item \textbf{Working Directory}: Aktuelle Dateien
+    \item \textbf{Staging Area}: Vorbereitete Änderungen
+    \item \textbf{Repository}: Vollständige Historie
+    \item \textbf{Commit}: Snapshot zu einem Zeitpunkt
+    \item \textbf{Branch}: Entwicklungszweig
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Git Basis-Workflow}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Projekt starten:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily, language={}]
+# Neues Repository
+git init
+
+# Existierendes Repository klonen
+git clone https://github.com/user/repo.git
+
+# Status anzeigen
+git status
+    \end{lstlisting}
+
+    \textbf{Änderungen committen:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily, language={}]
+# Dateien zur Staging Area hinzufügen
+git add file1.java file2.java
+git add .                    # Alle Änderungen
+
+# Commit erstellen
+git commit -m "Add new feature"
+
+# Add und Commit kombiniert (nur für tracked files)
+git commit -am "Fix bug in calculation"
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Mit Remote arbeiten:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily, language={}]
+# Änderungen hochladen
+git push
+
+# Änderungen herunterladen
+git pull
+
+# Remote Repository hinzufügen
+git remote add origin https://github.com/user/repo.git
+git push -u origin main
+    \end{lstlisting}
+
+    \textbf{Historie anzeigen:}
+    \begin{lstlisting}[style=java, basicstyle=\tiny\ttfamily, language={}]
+git log                      # Ausführliches Log
+git log --oneline           # Kompakte Ansicht
+git log --graph             # Mit Branching-Visualisierung
+git diff                    # Änderungen anzeigen
+git blame file.java         # Zeile für Zeile Autoreninfo
+    \end{lstlisting}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Gute Commit-Messages}
+  \begin{exampleblock}{Anatomie einer guten Commit-Message}
+    \begin{lstlisting}[style=java, basicstyle=\footnotesize\ttfamily, language={}]
+Kurze Zusammenfassung (< 50 Zeichen)
+
+Detaillierte Beschreibung, wenn nötig.
+Erkläre WARUM, nicht WAS.
+Verwende Imperativ: "Add" statt "Added".
+
+- Kann Aufzählungen enthalten
+- Oder Links zu Issues: Fixes #123
+    \end{lstlisting}
+  \end{exampleblock}
+
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{Gute Beispiele:}
+    {\footnotesize
+    \begin{itemize}
+      \item \texttt{Add user authentication}
+      \item \texttt{Fix memory leak in image processing}
+      \item \texttt{Update Spring Boot to version 3.2}
+    \end{itemize}
+    }
+
+    \column{0.5\textwidth}
+    \textbf{Schlechte Beispiele:}
+    {\footnotesize
+    \begin{itemize}
+      \item \texttt{fix}
+      \item \texttt{changed some files}
+      \item \texttt{WIP} (außer für temporäre Commits)
+    \end{itemize}
+    }
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{.gitignore Datei}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \begin{lstlisting}[style=java, basicstyle=\footnotesize\ttfamily, language={}]
+# Build-Ordner
+build/
+target/
+out/
+
+# IDE-Dateien
+.idea/
+.vscode/
+
+# OS-spezifische Dateien
+.DS_Store
+Thumbs.db
+*~
+
+# Sensitive Daten
+.env
+config/local.properties
+    \end{lstlisting}
+
+    \column{0.5\textwidth}
+    \textbf{Patterns:}
+    \begin{itemize}
+      \item \texttt{*.class} - Alle .class Dateien
+      \item \texttt{build/} - Komplettes Verzeichnis
+      \item \texttt{!important.class} - Ausnahme definieren
+      \item \texttt{docs/*.pdf} - PDFs nur in docs/
+    \end{itemize}
+  \end{columns}
+\end{frame}
